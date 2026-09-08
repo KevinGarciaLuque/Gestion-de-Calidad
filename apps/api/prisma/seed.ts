@@ -13,6 +13,7 @@ import {
   ROLES,
   ROL_PERMISOS,
 } from '../src/auth/rbac/permisos.catalog';
+import { MATRIZ_DEFAULT } from '../src/riesgos/matriz.default';
 
 const prisma = new PrismaClient();
 
@@ -50,6 +51,14 @@ async function main(): Promise<void> {
     });
   }
   console.log('✓ permisos asignados a roles');
+
+  // 3b. Matriz de riesgo por defecto (no se sobreescribe si ya fue configurada)
+  await prisma.matrizRiesgo.upsert({
+    where: { id: 1 },
+    create: { id: 1, ...MATRIZ_DEFAULT },
+    update: {},
+  });
+  console.log('✓ matriz de riesgo');
 
   // 4. Unidad raíz
   const hospital = await prisma.unidadOrganizativa.upsert({

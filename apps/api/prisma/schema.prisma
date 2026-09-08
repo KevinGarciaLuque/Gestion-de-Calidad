@@ -3,6 +3,7 @@
 // Fase 1: roles, permisos, alcance, estructura organizacional y refresh tokens.
 // Fase 2: mapa de procesos, fichas versionadas y relaciones entre procesos.
 // Fase 3: indicadores / KPI y sus mediciones por periodo.
+// Fase 4: matriz configurable, riesgos y oportunidades por proceso, revisiones.
 
 generator client {
   provider = "prisma-client-js"
@@ -42,6 +43,8 @@ model Usuario {
   indicadoresAnalisis Indicador[]          @relation("IndicadorResponsableAnalisis")
   medicionesCapturadas MedicionIndicador[] @relation("MedicionCapturaPor")
   medicionesAnalizadas MedicionIndicador[] @relation("MedicionAnalisisPor")
+  riesgosResponsable  Riesgo[]             @relation("RiesgoResponsable")
+  revisionesRiesgo    RevisionRiesgo[]     @relation("RevisionRiesgoPor")
 
   @@map("usuarios")
 }
@@ -226,6 +229,7 @@ model Proceso {
   relacionadoPor ProcesoRelacion[] @relation("ProcesoDestino")
   rolesAlcance   UsuarioRol[]
   indicadores    Indicador[]
+  riesgos        Riesgo[]
 
   @@index([tipo])
   @@index([areaId])
@@ -365,6 +369,117 @@ model MedicionIndicador {
   @@unique([indicadorId, anio, periodo])
   @@index([indicadorId])
   @@map("mediciones_indicador")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Riesgos y oportunidades (Fase 4)
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum TipoRiesgo {
+  RIESGO
+  OPORTUNIDAD
+}
+
+enum CategoriaRiesgo {
+  BAJO
+  MEDIO
+  ALTO
+  CRITICO
+}
+
+enum EficaciaControl {
+  NO_EVALUADA
+  INEFICAZ
+  PARCIAL
+  EFICAZ
+}
+
+enum EstadoRiesgo {
+  IDENTIFICADO
+  EN_TRATAMIENTO
+  MONITOREADO
+  CERRADO
+  MATERIALIZADO
+}
+
+/// Configuración única de la matriz de evaluación. Editable por Calidad.
+model MatrizRiesgo {
+  id                  Int    @id @default(1)
+  escalaProbabilidad  Json // [{ valor, etiqueta, descripcion? }]
+  escalaImpacto       Json
+  umbralMedio         Int // nivel (prob×impacto) a partir del cual es MEDIO
+  umbralAlto          Int
+  umbralCritico       Int
+  mesesRevisionDefault Int   @default(12) @map("meses_revision_default")
+  actualizadoAt       DateTime @updatedAt @map("actualizado_at")
+
+  @@map("matriz_riesgo")
+}
+
+model Riesgo {
+  id            String          @id @default(uuid())
+  codigo        String          @unique
+  tipo          TipoRiesgo      @default(RIESGO)
+  procesoId     String          @map("proceso_id")
+  descripcion   String          @db.Text
+  causa         String?         @db.Text
+  consecuencia  String?         @db.Text
+
+  // Evaluación inherente
+  probabilidadInherente Int     @map("probabilidad_inherente")
+  impactoInherente      Int     @map("impacto_inherente")
+  nivelInherente        Int     @map("nivel_inherente")
+  categoriaInherente    CategoriaRiesgo @map("categoria_inherente")
+
+  // Controles y tratamiento
+  controles       String?        @db.Text
+  eficaciaControl EficaciaControl @default(NO_EVALUADA) @map("eficacia_control")
+  planTratamiento String?        @map("plan_tratamiento") @db.Text
+  responsableId   String?        @map("responsable_id")
+  fechaCompromiso DateTime?      @map("fecha_compromiso")
+
+  // Evaluación residual
+  probabilidadResidual Int?      @map("probabilidad_residual")
+  impactoResidual      Int?      @map("impacto_residual")
+  nivelResidual        Int?      @map("nivel_residual")
+  categoriaResidual    CategoriaRiesgo? @map("categoria_residual")
+
+  estado             EstadoRiesgo @default(IDENTIFICADO)
+  fechaRevision      DateTime?    @map("fecha_revision")
+  ultimaRevisionAt   DateTime?    @map("ultima_revision_at")
+  requiereReevaluacion Boolean    @default(false) @map("requiere_reevaluacion")
+  archivadoAt        DateTime?    @map("archivado_at")
+  creadoAt           DateTime     @default(now()) @map("creado_at")
+  actualizadoAt      DateTime     @updatedAt @map("actualizado_at")
+
+  proceso     Proceso  @relation(fields: [procesoId], references: [id], onDelete: Cascade)
+  responsable Usuario? @relation("RiesgoResponsable", fields: [responsableId], references: [id], onDelete: SetNull)
+  revisiones  RevisionRiesgo[]
+
+  @@index([procesoId])
+  @@index([tipo])
+  @@map("riesgos")
+}
+
+/// Registro de cada revisión / reevaluación del riesgo.
+model RevisionRiesgo {
+  id          String   @id @default(uuid())
+  riesgoId    String   @map("riesgo_id")
+  fecha       DateTime @default(now())
+  revisadoPorId String? @map("revisado_por_id")
+  comentario  String?  @db.Text
+  // Snapshot tras la revisión
+  probabilidad Int?
+  impacto      Int?
+  nivel        Int?
+  categoria    CategoriaRiesgo?
+  esResidual   Boolean @default(true) @map("es_residual")
+
+  riesgo      Riesgo   @relation(fields: [riesgoId], references: [id], onDelete: Cascade)
+  revisadoPor Usuario? @relation("RevisionRiesgoPor", fields: [revisadoPorId], references: [id], onDelete: SetNull)
+
+  @@index([riesgoId])
+  @@map("revisiones_riesgo")
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -35,7 +35,7 @@ const MODULOS: ItemModulo[] = [
   { key: '/', icon: <DashboardOutlined />, label: 'Panel', permiso: 'dashboard.ver' },
   { key: '/procesos', icon: <PartitionOutlined />, label: 'Procesos', permiso: 'procesos.ver' },
   { key: '/indicadores', icon: <BarChartOutlined />, label: 'Indicadores', permiso: 'indicadores.ver' },
-  { key: '/riesgos', icon: <WarningOutlined />, label: 'Riesgos', proximamente: true },
+  { key: '/riesgos', icon: <WarningOutlined />, label: 'Riesgos', permiso: 'riesgos.ver' },
   { key: '/documentos', icon: <FileTextOutlined />, label: 'Control documental', proximamente: true },
   { key: '/auditorias', icon: <AuditOutlined />, label: 'Auditorías', proximamente: true },
   { key: '/hallazgos', icon: <SafetyOutlined />, label: 'Hallazgos y NC', proximamente: true },
@@ -61,6 +61,7 @@ const RUTAS_MENU = [
   '/admin/bitacora',
   '/procesos',
   '/indicadores',
+  '/riesgos',
   '/',
 ]
 

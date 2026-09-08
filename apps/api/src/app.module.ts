@@ -14,6 +14,7 @@ import { RolesModule } from './roles/roles.module';
 import { OrganizacionModule } from './organizacion/organizacion.module';
 import { ProcesosModule } from './procesos/procesos.module';
 import { IndicadoresModule } from './indicadores/indicadores.module';
+import { RiesgosModule } from './riesgos/riesgos.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { IndicadoresModule } from './indicadores/indicadores.module';
     OrganizacionModule,
     ProcesosModule,
     IndicadoresModule,
+    RiesgosModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: HttpExceptionFilter },

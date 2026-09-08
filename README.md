@@ -76,7 +76,9 @@ npm run dev
 - **Fase 3** ✅ indicadores / KPI: definición, cálculo automático (numerador/denominador),
   semáforo por meta y umbral, captura por periodo, tendencia entre periodos, alertas de
   captura pendiente / fuera de meta / reincidencia, análisis y consolidado anual.
-- **Fase 4** Riesgos y oportunidades.
+- **Fase 4** ✅ riesgos y oportunidades: matriz configurable (prob × impacto), nivel inherente
+  y residual, controles y plan de tratamiento, revisiones, mapa de calor, riesgos
+  transversales, y el candado de "no cerrar riesgo alto/crítico sin responsable ni plan".
 - **Fase 5** Control documental.
 - **Fase 6** Auditorías.
 - **Fase 7** Hallazgos y no conformidades.

@@ -26,6 +26,7 @@ import { FichaVista } from './FichaVista'
 import { IdentificacionModal } from './IdentificacionModal'
 import { InteraccionesTab } from './InteraccionesTab'
 import { ProcesoIndicadoresTab } from './ProcesoIndicadoresTab'
+import { ProcesoRiesgosTab } from '@/features/riesgos/ProcesoRiesgosTab'
 
 const { Title, Text } = Typography
 
@@ -281,6 +282,11 @@ export function ProcesoFichaPage() {
             key: 'indicadores',
             label: 'Indicadores',
             children: <ProcesoIndicadoresTab procesoId={proceso.id} />,
+          },
+          {
+            key: 'riesgos',
+            label: 'Riesgos',
+            children: <ProcesoRiesgosTab procesoId={proceso.id} />,
           },
           {
             key: 'interacciones',

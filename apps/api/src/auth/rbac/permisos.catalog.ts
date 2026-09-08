@@ -60,6 +60,14 @@ export const PERMISOS: DefinicionPermiso[] = [
   { codigo: 'indicadores.analizar', modulo: 'indicadores', descripcion: 'Registrar análisis de resultados fuera de meta' },
   { codigo: 'indicadores.archivar', modulo: 'indicadores', descripcion: 'Archivar indicadores' },
 
+  // Riesgos
+  { codigo: 'riesgos.ver', modulo: 'riesgos', descripcion: 'Ver riesgos y oportunidades' },
+  { codigo: 'riesgos.crear', modulo: 'riesgos', descripcion: 'Registrar riesgos y oportunidades' },
+  { codigo: 'riesgos.editar', modulo: 'riesgos', descripcion: 'Evaluar, tratar y revisar riesgos' },
+  { codigo: 'riesgos.cerrar', modulo: 'riesgos', descripcion: 'Cerrar o reabrir riesgos' },
+  { codigo: 'riesgos.configurar', modulo: 'riesgos', descripcion: 'Configurar la matriz de evaluación' },
+  { codigo: 'riesgos.archivar', modulo: 'riesgos', descripcion: 'Archivar riesgos' },
+
   // Tablero
   { codigo: 'dashboard.ver', modulo: 'dashboard', descripcion: 'Ver el panel de calidad' },
 ];
@@ -94,6 +102,12 @@ export const PERMISO = {
   INDICADORES_CAPTURAR: 'indicadores.capturar',
   INDICADORES_ANALIZAR: 'indicadores.analizar',
   INDICADORES_ARCHIVAR: 'indicadores.archivar',
+  RIESGOS_VER: 'riesgos.ver',
+  RIESGOS_CREAR: 'riesgos.crear',
+  RIESGOS_EDITAR: 'riesgos.editar',
+  RIESGOS_CERRAR: 'riesgos.cerrar',
+  RIESGOS_CONFIGURAR: 'riesgos.configurar',
+  RIESGOS_ARCHIVAR: 'riesgos.archivar',
   DASHBOARD_VER: 'dashboard.ver',
 } as const;
 
@@ -182,6 +196,12 @@ export const ROL_PERMISOS: Record<string, string[]> = {
     PERMISO.INDICADORES_CAPTURAR,
     PERMISO.INDICADORES_ANALIZAR,
     PERMISO.INDICADORES_ARCHIVAR,
+    PERMISO.RIESGOS_VER,
+    PERMISO.RIESGOS_CREAR,
+    PERMISO.RIESGOS_EDITAR,
+    PERMISO.RIESGOS_CERRAR,
+    PERMISO.RIESGOS_CONFIGURAR,
+    PERMISO.RIESGOS_ARCHIVAR,
     PERMISO.DASHBOARD_VER,
   ],
   [ROL.RESP_PROCESO]: [
@@ -191,6 +211,9 @@ export const ROL_PERMISOS: Record<string, string[]> = {
     PERMISO.INDICADORES_VER,
     PERMISO.INDICADORES_CAPTURAR,
     PERMISO.INDICADORES_ANALIZAR,
+    PERMISO.RIESGOS_VER,
+    PERMISO.RIESGOS_CREAR,
+    PERMISO.RIESGOS_EDITAR,
     PERMISO.DASHBOARD_VER,
   ],
   [ROL.AUDITOR_INTERNO]: [
@@ -198,6 +221,7 @@ export const ROL_PERMISOS: Record<string, string[]> = {
     PERMISO.BITACORA_VER,
     PERMISO.PROCESOS_VER,
     PERMISO.INDICADORES_VER,
+    PERMISO.RIESGOS_VER,
     PERMISO.DASHBOARD_VER,
   ],
   [ROL.DIRECCION]: [
@@ -205,8 +229,14 @@ export const ROL_PERMISOS: Record<string, string[]> = {
     PERMISO.BITACORA_VER,
     PERMISO.PROCESOS_VER,
     PERMISO.INDICADORES_VER,
+    PERMISO.RIESGOS_VER,
     PERMISO.DASHBOARD_VER,
   ],
   [ROL.COLABORADOR]: [PERMISO.DASHBOARD_VER],
-  [ROL.CONSULTA_EXTERNO]: [PERMISO.PROCESOS_VER, PERMISO.INDICADORES_VER, PERMISO.DASHBOARD_VER],
+  [ROL.CONSULTA_EXTERNO]: [
+    PERMISO.PROCESOS_VER,
+    PERMISO.INDICADORES_VER,
+    PERMISO.RIESGOS_VER,
+    PERMISO.DASHBOARD_VER,
+  ],
 };

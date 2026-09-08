@@ -8,6 +8,9 @@ import { MapaProcesosPage } from '@/features/procesos/MapaProcesosPage'
 import { ProcesoFichaPage } from '@/features/procesos/ProcesoFichaPage'
 import { IndicadoresPage } from '@/features/indicadores/IndicadoresPage'
 import { IndicadorDetallePage } from '@/features/indicadores/IndicadorDetallePage'
+import { RiesgosPage } from '@/features/riesgos/RiesgosPage'
+import { RiesgoDetallePage } from '@/features/riesgos/RiesgoDetallePage'
+import { MatrizConfigPage } from '@/features/riesgos/MatrizConfigPage'
 import { UsuariosPage } from '@/features/usuarios/UsuariosPage'
 import { RolesPage } from '@/features/roles/RolesPage'
 import { OrganizacionPage } from '@/features/organizacion/OrganizacionPage'
@@ -57,6 +60,30 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute permiso="indicadores.ver">
             <IndicadorDetallePage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'riesgos',
+        element: (
+          <ProtectedRoute permiso="riesgos.ver">
+            <RiesgosPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'riesgos/matriz',
+        element: (
+          <ProtectedRoute permiso="riesgos.configurar">
+            <MatrizConfigPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'riesgos/:id',
+        element: (
+          <ProtectedRoute permiso="riesgos.ver">
+            <RiesgoDetallePage />
           </ProtectedRoute>
         ),
       },
