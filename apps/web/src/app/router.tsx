@@ -27,6 +27,9 @@ import { OrganizacionPage } from '@/features/organizacion/OrganizacionPage'
 import { BitacoraPage } from '@/features/bitacora/BitacoraPage'
 import { PerfilPage } from '@/features/perfil/PerfilPage'
 import { CambiarPasswordObligatorioPage } from '@/features/perfil/CambiarPasswordObligatorioPage'
+import { NotificacionesPage } from '@/features/notificaciones/NotificacionesPage'
+import { CalendarioPage } from '@/features/calendario/CalendarioPage'
+import { AutomatizacionesConfigPage } from '@/features/automatizaciones/AutomatizacionesConfigPage'
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -41,6 +44,8 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <DashboardPage /> },
       { path: 'perfil', element: <PerfilPage /> },
+      { path: 'notificaciones', element: <NotificacionesPage /> },
+      { path: 'calendario', element: <CalendarioPage /> },
       {
         path: 'procesos',
         element: (
@@ -206,6 +211,14 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute permiso="bitacora.ver">
             <BitacoraPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'admin/automatizaciones',
+        element: (
+          <ProtectedRoute permiso="automatizaciones.configurar">
+            <AutomatizacionesConfigPage />
           </ProtectedRoute>
         ),
       },

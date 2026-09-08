@@ -100,6 +100,9 @@ export const PERMISOS: DefinicionPermiso[] = [
   { codigo: 'riesgos.configurar', modulo: 'riesgos', descripcion: 'Configurar la matriz de evaluación' },
   { codigo: 'riesgos.archivar', modulo: 'riesgos', descripcion: 'Archivar riesgos' },
 
+  // Automatizaciones
+  { codigo: 'automatizaciones.configurar', modulo: 'automatizaciones', descripcion: 'Configurar las reglas del motor de automatizaciones' },
+
   // Tablero
   { codigo: 'dashboard.ver', modulo: 'dashboard', descripcion: 'Ver el panel de calidad' },
 ];
@@ -156,6 +159,7 @@ export const PERMISO = {
   MCC_VER: 'mcc.ver',
   MCC_CREAR: 'mcc.crear',
   MCC_GESTIONAR: 'mcc.gestionar',
+  AUTOMATIZACIONES_CONFIGURAR: 'automatizaciones.configurar',
   RIESGOS_VER: 'riesgos.ver',
   RIESGOS_CREAR: 'riesgos.crear',
   RIESGOS_EDITAR: 'riesgos.editar',
@@ -272,6 +276,7 @@ export const ROL_PERMISOS: Record<string, string[]> = {
     PERMISO.MCC_VER,
     PERMISO.MCC_CREAR,
     PERMISO.MCC_GESTIONAR,
+    PERMISO.AUTOMATIZACIONES_CONFIGURAR,
     PERMISO.RIESGOS_VER,
     PERMISO.RIESGOS_CREAR,
     PERMISO.RIESGOS_EDITAR,

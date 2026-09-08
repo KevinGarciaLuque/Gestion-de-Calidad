@@ -4,6 +4,7 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { RouterProvider } from 'react-router-dom'
 import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
 import 'dayjs/locale/es'
 import { queryClient } from '@/lib/queryClient'
 import { configurarAuthEvents } from '@/lib/api'
@@ -11,6 +12,7 @@ import { useAuthStore } from '@/features/auth/authStore'
 import { router } from './router'
 import { themeCalidad360 } from './theme'
 
+dayjs.extend(relativeTime)
 dayjs.locale('es')
 
 export function App() {

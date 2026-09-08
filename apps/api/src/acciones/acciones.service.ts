@@ -10,6 +10,7 @@ import { PERMISO } from '../auth/rbac/permisos.catalog';
 import type { UsuarioActual } from '../auth/rbac/usuario-actual';
 import { BitacoraService } from '../common/bitacora/bitacora.service';
 import { paginar, type Paginado } from '../common/dto/paginacion';
+import { NotificacionesService } from '../notificaciones/notificaciones.service';
 import { PrismaService } from '../prisma/prisma.service';
 import type {
   AvanceDto,
@@ -42,6 +43,7 @@ export class AccionesService {
     private readonly prisma: PrismaService,
     private readonly alcance: AlcanceService,
     private readonly bitacora: BitacoraService,
+    private readonly noti: NotificacionesService,
   ) {}
 
   async listar(q: ListarAccionesQuery, actor: UsuarioActual): Promise<Paginado<unknown>> {
@@ -140,6 +142,13 @@ export class AccionesService {
       accion: 'accion.crear', actorId: actor.id, actorEmail: actor.email,
       entidad: 'Accion', entidadId: a.id, valorNuevo: { codigo, tipo: dto.tipo, origen: dto.origen },
     });
+    if (dto.responsableId && dto.responsableId !== actor.id) {
+      await this.noti.notificar(dto.responsableId, {
+        titulo: 'Nueva acción asignada',
+        mensaje: `Se te asignó la acción ${codigo}: ${dto.descripcion.slice(0, 120)}`,
+        entidad: 'Accion', entidadId: a.id, ruta: `/acciones/${a.id}`, nivel: 'AVISO',
+      });
+    }
     return this.obtener(a.id, actor);
   }
 

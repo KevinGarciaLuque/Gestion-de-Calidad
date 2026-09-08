@@ -19,6 +19,7 @@ import { useMemo, useState } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/features/auth/useAuth'
 import { useAuthStore } from '@/features/auth/authStore'
+import { NotificacionesMenu } from '@/features/notificaciones/NotificacionesMenu'
 
 const { Header, Sider, Content } = Layout
 const { Text } = Typography
@@ -42,7 +43,7 @@ const MODULOS: ItemModulo[] = [
   { key: '/hallazgos', icon: <SafetyOutlined />, label: 'Hallazgos y NC', permiso: 'hallazgos.ver' },
   { key: '/acciones', icon: <ThunderboltOutlined />, label: 'Planes y acciones', permiso: 'acciones.ver' },
   { key: '/mcc', icon: <BulbOutlined />, label: 'Mejora continua', permiso: 'mcc.ver' },
-  { key: '/calendario', icon: <CalendarOutlined />, label: 'Calendario', proximamente: true },
+  { key: '/calendario', icon: <CalendarOutlined />, label: 'Calendario' },
   {
     key: 'admin',
     icon: <SettingOutlined />,
@@ -51,6 +52,7 @@ const MODULOS: ItemModulo[] = [
       { key: '/admin/usuarios', icon: null, label: 'Usuarios', permiso: 'usuarios.ver' },
       { key: '/admin/roles', icon: null, label: 'Roles y permisos', permiso: 'roles.ver' },
       { key: '/admin/organizacion', icon: null, label: 'Estructura organizacional', permiso: 'organizacion.ver' },
+      { key: '/admin/automatizaciones', icon: null, label: 'Automatizaciones', permiso: 'automatizaciones.configurar' },
       { key: '/admin/bitacora', icon: null, label: 'Bitácora', permiso: 'bitacora.ver' },
     ],
   },
@@ -60,7 +62,10 @@ const RUTAS_MENU = [
   '/admin/usuarios',
   '/admin/roles',
   '/admin/organizacion',
+  '/admin/automatizaciones',
   '/admin/bitacora',
+  '/calendario',
+  '/notificaciones',
   '/procesos',
   '/indicadores',
   '/riesgos',
@@ -161,20 +166,23 @@ export function AppShell() {
           <Text strong style={{ fontSize: 16 }}>
             Sistema de Gestión de Calidad
           </Text>
-          <Dropdown
-            menu={{
-              items: menuUsuario,
-              onClick: ({ key }) => {
-                if (key === 'salir') void cerrarSesion()
-                if (key === 'perfil') navigate('/perfil')
-              },
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-              <Avatar size="small" icon={<UserOutlined />} />
-              <Text>{usuario?.nombre ?? 'Invitado'}</Text>
-            </div>
-          </Dropdown>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <NotificacionesMenu />
+            <Dropdown
+              menu={{
+                items: menuUsuario,
+                onClick: ({ key }) => {
+                  if (key === 'salir') void cerrarSesion()
+                  if (key === 'perfil') navigate('/perfil')
+                },
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                <Avatar size="small" icon={<UserOutlined />} />
+                <Text>{usuario?.nombre ?? 'Invitado'}</Text>
+              </div>
+            </Dropdown>
+          </div>
         </Header>
 
         <Content style={{ margin: 16 }}>

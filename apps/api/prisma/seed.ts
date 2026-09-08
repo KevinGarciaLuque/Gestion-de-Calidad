@@ -14,6 +14,7 @@ import {
   ROL_PERMISOS,
 } from '../src/auth/rbac/permisos.catalog';
 import { MATRIZ_DEFAULT } from '../src/riesgos/matriz.default';
+import { REGLAS_DEFAULT } from '../src/automatizaciones/reglas.default';
 
 const prisma = new PrismaClient();
 
@@ -59,6 +60,16 @@ async function main(): Promise<void> {
     update: {},
   });
   console.log('✓ matriz de riesgo');
+
+  // 3c. Reglas del motor de automatizaciones (no pisa la config editada)
+  for (const r of REGLAS_DEFAULT) {
+    await prisma.reglaAutomatizacion.upsert({
+      where: { codigo: r.codigo },
+      create: { codigo: r.codigo, nombre: r.nombre, descripcion: r.descripcion, orden: r.orden, config: r.config },
+      update: { nombre: r.nombre, descripcion: r.descripcion, orden: r.orden },
+    });
+  }
+  console.log(`✓ ${REGLAS_DEFAULT.length} reglas de automatización`);
 
   // 4. Unidad raíz
   const hospital = await prisma.unidadOrganizativa.upsert({

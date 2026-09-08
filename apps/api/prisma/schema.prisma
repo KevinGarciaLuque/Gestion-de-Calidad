@@ -8,6 +8,7 @@
 // Fase 6: auditorías — programa anual, planes, checklist, hallazgos e informe.
 // Fase 7: hallazgos — análisis de causa, máquina de estados y verificación de eficacia.
 // Fase 8: planes de mejora, acciones (CAPA) y registro de mejora continua (MCC).
+// Fase 9: motor de automatizaciones, notificaciones y calendario transversal.
 
 generator client {
   provider = "prisma-client-js"
@@ -65,6 +66,7 @@ model Usuario {
   avancesAccion      AvanceAccion[]     @relation("AvanceAccionPor")
   mccPropuestos     RegistroMCC[]       @relation("MCCPropuestoPor")
   mccGestionados    RegistroMCC[]       @relation("MCCGestionadoPor")
+  notificaciones    Notificacion[]
 
   @@map("usuarios")
 }
@@ -1084,4 +1086,60 @@ model EventoMCC {
 
   @@index([mccId])
   @@map("eventos_mcc")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Notificaciones y automatizaciones (Fase 9)
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum NivelNotificacion {
+  INFO
+  AVISO
+  URGENTE
+}
+
+model Notificacion {
+  id         String            @id @default(uuid())
+  usuarioId  String            @map("usuario_id")
+  nivel      NivelNotificacion @default(AVISO)
+  titulo     String
+  mensaje    String            @db.Text
+  entidad    String?
+  entidadId  String?           @map("entidad_id")
+  ruta       String?
+  claveDedup String?           @map("clave_dedup")
+  leidaAt    DateTime?         @map("leida_at")
+  creadoAt   DateTime          @default(now()) @map("creado_at")
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@unique([usuarioId, claveDedup])
+  @@index([usuarioId, leidaAt])
+  @@map("notificaciones")
+}
+
+/// Reglas del motor de automatizaciones. Se siembran por defecto y las edita Calidad.
+model ReglaAutomatizacion {
+  codigo      String   @id
+  nombre      String
+  descripcion String   @db.Text
+  activa      Boolean  @default(true)
+  /// Config libre: { diasAviso: [30,15,7], escalamiento: [{dias:1,a:"responsable"},...], enviarCorreo: bool }
+  config      Json     @default("{}")
+  orden       Int      @default(0)
+  actualizadoAt DateTime @updatedAt @map("actualizado_at")
+
+  @@map("reglas_automatizacion")
+}
+
+/// Última ejecución del motor (para el panel de administración).
+model EjecucionMotor {
+  id            String   @id @default(uuid())
+  inicio        DateTime @default(now())
+  fin           DateTime?
+  notificaciones Int     @default(0)
+  detalle       Json     @default("{}")
+  manual        Boolean  @default(false)
+
+  @@map("ejecuciones_motor")
 }
