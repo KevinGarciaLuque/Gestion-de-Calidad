@@ -85,7 +85,9 @@ npm run dev
 - **Fase 6** ✅ auditorías: programa anual, planes, ejecución del checklist (cumple/no
   cumple/observación/N/A), generación de hallazgos desde el checklist, informe automático
   y flujo de aprobación/cierre. Incluye módulo base de Hallazgos y no conformidades.
-- **Fase 7** Hallazgos y no conformidades.
+- **Fase 7** ✅ hallazgos y no conformidades — ciclo completo: análisis de causa
+  (5 porqués / Ishikawa / lluvia de causas), máquina de estados con transiciones
+  guardadas, evidencias adjuntas, verificación de eficacia y línea de tiempo.
 - **Fase 8** Planes de mejora y acciones (CAPA).
 - **Fase 9** Motor de automatizaciones + calendario y notificaciones.
 - **Fase 10** Dashboard gerencial + reportes → **fin del MVP**.

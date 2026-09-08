@@ -6,6 +6,7 @@
 // Fase 4: matriz configurable, riesgos y oportunidades por proceso, revisiones.
 // Fase 5: control documental — documentos versionados, archivos y lista maestra.
 // Fase 6: auditorías — programa anual, planes, checklist, hallazgos e informe.
+// Fase 7: hallazgos — análisis de causa, máquina de estados y verificación de eficacia.
 
 generator client {
   provider = "prisma-client-js"
@@ -714,7 +715,7 @@ model AuditoriaItem {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  Hallazgos (esqueleto en Fase 6; el ciclo de análisis y acciones es Fase 7-8)
+//  Hallazgos y no conformidades (Fase 6 base + Fase 7 ciclo completo)
 // ─────────────────────────────────────────────────────────────────────────────
 
 enum OrigenHallazgo {
@@ -750,6 +751,13 @@ enum PrioridadHallazgo {
   ALTA
 }
 
+enum MetodologiaCausa {
+  CINCO_PORQUES
+  ISHIKAWA
+  LLUVIA_CAUSAS
+  OTRO
+}
+
 model Hallazgo {
   id             String                @id @default(uuid())
   codigo         String                @unique
@@ -768,6 +776,21 @@ model Hallazgo {
   fechaCompromiso DateTime?            @map("fecha_compromiso")
   prioridad      PrioridadHallazgo     @default(MEDIA)
   estado         EstadoHallazgo        @default(ABIERTO)
+
+  // Fase 7 — ciclo completo
+  correccionInmediata String?          @map("correccion_inmediata") @db.Text
+  planAccion          String?          @map("plan_accion") @db.Text
+  validadoPorId       String?          @map("validado_por_id")
+  validadoAt          DateTime?        @map("validado_at")
+  planAprobadoPorId   String?          @map("plan_aprobado_por_id")
+  planAprobadoAt      DateTime?        @map("plan_aprobado_at")
+  verificacionEficacia String?         @map("verificacion_eficacia") @db.Text
+  eficaciaConfirmada Boolean?          @map("eficacia_confirmada")
+  verificadoPorId    String?           @map("verificado_por_id")
+  verificadoAt       DateTime?         @map("verificado_at")
+  fechaCierre        DateTime?         @map("fecha_cierre")
+  motivoReapertura  String?           @map("motivo_reapertura") @db.Text
+
   archivadoAt    DateTime?             @map("archivado_at")
   creadoAt       DateTime              @default(now()) @map("creado_at")
   actualizadoAt  DateTime              @updatedAt @map("actualizado_at")
@@ -778,11 +801,49 @@ model Hallazgo {
   area          UnidadOrganizativa? @relation(fields: [areaId], references: [id], onDelete: SetNull)
   detectadoPor  Usuario?       @relation("HallazgoDetectadoPor", fields: [detectadoPorId], references: [id], onDelete: SetNull)
   responsable   Usuario?       @relation("HallazgoResponsable", fields: [responsableId], references: [id], onDelete: SetNull)
+  analisisCausa AnalisisCausa?
+  eventos       EventoHallazgo[]
 
   @@index([origen])
   @@index([estado])
   @@index([procesoId])
   @@map("hallazgos")
+}
+
+/// Análisis de causa raíz de un hallazgo (1:1).
+model AnalisisCausa {
+  id            String           @id @default(uuid())
+  hallazgoId    String           @unique @map("hallazgo_id")
+  metodologia   MetodologiaCausa
+  contenido     Json             @default("{}") // estructura según la metodología
+  causaInmediata String?         @map("causa_inmediata") @db.Text
+  causaContribuyente String?     @map("causa_contribuyente") @db.Text
+  causaRaiz     String?          @map("causa_raiz") @db.Text
+  comentariosEquipo String?      @map("comentarios_equipo") @db.Text
+  elaboradoPorId String?         @map("elaborado_por_id")
+  elaboradoAt   DateTime?        @map("elaborado_at")
+  actualizadoAt DateTime         @updatedAt @map("actualizado_at")
+
+  hallazgo Hallazgo @relation(fields: [hallazgoId], references: [id], onDelete: Cascade)
+
+  @@map("analisis_causa")
+}
+
+/// Línea de tiempo del hallazgo: cada transición de estado / hito.
+model EventoHallazgo {
+  id         String   @id @default(uuid())
+  hallazgoId String   @map("hallazgo_id")
+  fecha      DateTime @default(now())
+  tipo       String // "validado", "plan_aprobado", "en_ejecucion", "eficacia", "cerrado", "reabierto", "comentario"
+  detalle    String?  @db.Text
+  estadoNuevo EstadoHallazgo? @map("estado_nuevo")
+  actorId    String?  @map("actor_id")
+  actorNombre String? @map("actor_nombre")
+
+  hallazgo Hallazgo @relation(fields: [hallazgoId], references: [id], onDelete: Cascade)
+
+  @@index([hallazgoId])
+  @@map("eventos_hallazgo")
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

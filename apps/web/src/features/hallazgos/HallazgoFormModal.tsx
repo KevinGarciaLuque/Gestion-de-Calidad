@@ -46,7 +46,7 @@ export function HallazgoFormModal({
         fechaCompromiso: v.fechaCompromiso ? (v.fechaCompromiso as dayjs.Dayjs).toISOString() : undefined,
       }
       return edicion
-        ? hallazgosApi.editar(hallazgo!.id, { ...base, estado: v.estado })
+        ? hallazgosApi.editar(hallazgo!.id, base)
         : hallazgosApi.crear({
             ...base,
             origen: v.origen as OrigenHallazgo,
@@ -85,7 +85,7 @@ export function HallazgoFormModal({
                 prioridad: hallazgo.prioridad,
                 responsableId: hallazgo.responsable?.id,
                 fechaCompromiso: hallazgo.fechaCompromiso ? dayjs(hallazgo.fechaCompromiso) : undefined,
-                estado: hallazgo.estado,
+                correccionInmediata: hallazgo.correccionInmediata ?? '',
               }
             : { origen: 'OTRO', clasificacion: 'OBSERVACION', prioridad: 'MEDIA' }
         }
@@ -132,18 +132,8 @@ export function HallazgoFormModal({
           <DatePicker style={{ width: '100%' }} />
         </Form.Item>
         {edicion && (
-          <Form.Item name="estado" label="Estado">
-            <Select
-              options={[
-                { value: 'ABIERTO', label: 'Abierto' },
-                { value: 'EN_ANALISIS', label: 'En análisis' },
-                { value: 'PLAN_APROBADO', label: 'Plan aprobado' },
-                { value: 'EN_EJECUCION', label: 'En ejecución' },
-                { value: 'PENDIENTE_EFICACIA', label: 'Pendiente de eficacia' },
-                { value: 'CERRADO', label: 'Cerrado' },
-                { value: 'REABIERTO', label: 'Reabierto' },
-              ]}
-            />
+          <Form.Item name="correccionInmediata" label="Corrección inmediata">
+            <Input.TextArea rows={2} placeholder="Contención aplicada de inmediato" />
           </Form.Item>
         )}
       </Form>

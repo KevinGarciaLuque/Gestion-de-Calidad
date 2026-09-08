@@ -46,5 +46,5 @@ export class EditarHallazgoDto {
   @IsOptional() @IsEnum(PrioridadHallazgo) prioridad?: PrioridadHallazgo;
   @IsOptional() @IsString() responsableId?: string | null;
   @IsOptional() @IsISO8601() fechaCompromiso?: string | null;
-  @IsOptional() @IsEnum(EstadoHallazgo) estado?: EstadoHallazgo;
+  @IsOptional() @IsString() @MaxLength(2000) correccionInmediata?: string | null;
 }
