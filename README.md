@@ -82,7 +82,9 @@ npm run dev
 - **Fase 5** ✅ control documental: documentos versionados con flujo de aprobación,
   archivos subidos al servidor (con hash y descarga autenticada), vigencias y próxima
   revisión, lista maestra, obsolescencia automática de la versión anterior.
-- **Fase 6** Auditorías.
+- **Fase 6** ✅ auditorías: programa anual, planes, ejecución del checklist (cumple/no
+  cumple/observación/N/A), generación de hallazgos desde el checklist, informe automático
+  y flujo de aprobación/cierre. Incluye módulo base de Hallazgos y no conformidades.
 - **Fase 7** Hallazgos y no conformidades.
 - **Fase 8** Planes de mejora y acciones (CAPA).
 - **Fase 9** Motor de automatizaciones + calendario y notificaciones.

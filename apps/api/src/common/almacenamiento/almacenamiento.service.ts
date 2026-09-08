@@ -5,7 +5,6 @@ import { extname, join } from 'node:path';
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Readable } from 'node:stream';
-import type { AppConfig } from '../config/configuration';
 
 const MIME_PERMITIDOS = new Set([
   'application/pdf',

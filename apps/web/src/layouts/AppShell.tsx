@@ -37,8 +37,8 @@ const MODULOS: ItemModulo[] = [
   { key: '/indicadores', icon: <BarChartOutlined />, label: 'Indicadores', permiso: 'indicadores.ver' },
   { key: '/riesgos', icon: <WarningOutlined />, label: 'Riesgos', permiso: 'riesgos.ver' },
   { key: '/documentos', icon: <FileTextOutlined />, label: 'Control documental', permiso: 'documentos.ver' },
-  { key: '/auditorias', icon: <AuditOutlined />, label: 'Auditorías', proximamente: true },
-  { key: '/hallazgos', icon: <SafetyOutlined />, label: 'Hallazgos y NC', proximamente: true },
+  { key: '/auditorias', icon: <AuditOutlined />, label: 'Auditorías', permiso: 'auditorias.ver' },
+  { key: '/hallazgos', icon: <SafetyOutlined />, label: 'Hallazgos y NC', permiso: 'hallazgos.ver' },
   { key: '/acciones', icon: <ThunderboltOutlined />, label: 'Planes y acciones', proximamente: true },
   { key: '/calendario', icon: <CalendarOutlined />, label: 'Calendario', proximamente: true },
   {
@@ -63,6 +63,8 @@ const RUTAS_MENU = [
   '/indicadores',
   '/riesgos',
   '/documentos',
+  '/auditorias',
+  '/hallazgos',
   '/',
 ]
 

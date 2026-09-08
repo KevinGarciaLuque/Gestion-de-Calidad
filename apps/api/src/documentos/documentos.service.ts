@@ -12,7 +12,7 @@ import { ambitoDe, type UsuarioActual } from '../auth/rbac/usuario-actual';
 import { BitacoraService } from '../common/bitacora/bitacora.service';
 import { paginar, type Paginado } from '../common/dto/paginacion';
 import { PrismaService } from '../prisma/prisma.service';
-import { AlmacenamientoService } from './almacenamiento.service';
+import { AlmacenamientoService } from '../common/almacenamiento/almacenamiento.service';
 import type {
   CrearDocumentoDto,
   EditarDocumentoDto,

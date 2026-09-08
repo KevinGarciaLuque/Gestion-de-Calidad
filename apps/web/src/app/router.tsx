@@ -13,6 +13,10 @@ import { RiesgoDetallePage } from '@/features/riesgos/RiesgoDetallePage'
 import { MatrizConfigPage } from '@/features/riesgos/MatrizConfigPage'
 import { DocumentosPage } from '@/features/documentos/DocumentosPage'
 import { DocumentoDetallePage } from '@/features/documentos/DocumentoDetallePage'
+import { AuditoriasPage } from '@/features/auditorias/AuditoriasPage'
+import { AuditoriaDetallePage } from '@/features/auditorias/AuditoriaDetallePage'
+import { HallazgosPage } from '@/features/hallazgos/HallazgosPage'
+import { HallazgoDetallePage } from '@/features/hallazgos/HallazgoDetallePage'
 import { UsuariosPage } from '@/features/usuarios/UsuariosPage'
 import { RolesPage } from '@/features/roles/RolesPage'
 import { OrganizacionPage } from '@/features/organizacion/OrganizacionPage'
@@ -102,6 +106,38 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute permiso="documentos.ver">
             <DocumentoDetallePage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'auditorias',
+        element: (
+          <ProtectedRoute permiso="auditorias.ver">
+            <AuditoriasPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'auditorias/:id',
+        element: (
+          <ProtectedRoute permiso="auditorias.ver">
+            <AuditoriaDetallePage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'hallazgos',
+        element: (
+          <ProtectedRoute permiso="hallazgos.ver">
+            <HallazgosPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'hallazgos/:id',
+        element: (
+          <ProtectedRoute permiso="hallazgos.ver">
+            <HallazgoDetallePage />
           </ProtectedRoute>
         ),
       },

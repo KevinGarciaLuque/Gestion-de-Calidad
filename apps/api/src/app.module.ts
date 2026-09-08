@@ -5,6 +5,8 @@ import configuration from './config/configuration';
 import { validateEnv } from './config/env.validation';
 import { PrismaModule } from './prisma/prisma.module';
 import { BitacoraModule } from './common/bitacora/bitacora.module';
+import { AlmacenamientoModule } from './common/almacenamiento/almacenamiento.module';
+import { EvidenciasModule } from './evidencias/evidencias.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { AuthModule } from './auth/auth.module';
@@ -16,6 +18,8 @@ import { ProcesosModule } from './procesos/procesos.module';
 import { IndicadoresModule } from './indicadores/indicadores.module';
 import { RiesgosModule } from './riesgos/riesgos.module';
 import { DocumentosModule } from './documentos/documentos.module';
+import { AuditoriasModule } from './auditorias/auditorias.module';
+import { HallazgosModule } from './hallazgos/hallazgos.module';
 
 @Module({
   imports: [
@@ -27,6 +31,8 @@ import { DocumentosModule } from './documentos/documentos.module';
     }),
     PrismaModule,
     BitacoraModule,
+    AlmacenamientoModule,
+    EvidenciasModule,
     AuthModule,
     HealthModule,
     UsuariosModule,
@@ -36,6 +42,8 @@ import { DocumentosModule } from './documentos/documentos.module';
     IndicadoresModule,
     RiesgosModule,
     DocumentosModule,
+    AuditoriasModule,
+    HallazgosModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: HttpExceptionFilter },
