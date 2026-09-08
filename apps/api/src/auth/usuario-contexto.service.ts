@@ -39,12 +39,15 @@ export class UsuarioContextoService {
       nombre: usuario.nombre,
       esSuperAdmin,
       permisos: [...permisos],
-      alcances: rolesVigentes.map((r) => ({
-        rolCodigo: r.rolCodigo,
-        tipoAlcance: r.tipoAlcance,
-        unidadId: r.unidadId,
-        procesoId: r.procesoId,
-      })),
+      alcances: rolesVigentes
+        .filter((r) => r.rol.activo)
+        .map((r) => ({
+          rolCodigo: r.rolCodigo,
+          tipoAlcance: r.tipoAlcance,
+          unidadId: r.unidadId,
+          procesoId: r.procesoId,
+          permisos: r.rol.permisos.map((rp) => rp.permisoCodigo),
+        })),
       debeCambiarPassword: usuario.debeCambiarPassword,
     };
   }

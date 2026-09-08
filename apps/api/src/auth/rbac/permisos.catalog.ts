@@ -44,6 +44,14 @@ export const PERMISOS: DefinicionPermiso[] = [
   // Bitácora
   { codigo: 'bitacora.ver', modulo: 'bitacora', descripcion: 'Consultar la bitácora del sistema' },
 
+  // Procesos
+  { codigo: 'procesos.ver', modulo: 'procesos', descripcion: 'Ver el mapa y las fichas de procesos' },
+  { codigo: 'procesos.crear', modulo: 'procesos', descripcion: 'Crear procesos' },
+  { codigo: 'procesos.editar', modulo: 'procesos', descripcion: 'Editar la identificación y la ficha (borrador)' },
+  { codigo: 'procesos.revisar', modulo: 'procesos', descripcion: 'Revisar y devolver cambios de procesos' },
+  { codigo: 'procesos.aprobar', modulo: 'procesos', descripcion: 'Aprobar y publicar versiones de procesos' },
+  { codigo: 'procesos.archivar', modulo: 'procesos', descripcion: 'Archivar procesos' },
+
   // Tablero
   { codigo: 'dashboard.ver', modulo: 'dashboard', descripcion: 'Ver el panel de calidad' },
 ];
@@ -66,6 +74,12 @@ export const PERMISO = {
   ORGANIZACION_EDITAR: 'organizacion.editar',
   ORGANIZACION_ACTIVAR: 'organizacion.activar',
   BITACORA_VER: 'bitacora.ver',
+  PROCESOS_VER: 'procesos.ver',
+  PROCESOS_CREAR: 'procesos.crear',
+  PROCESOS_EDITAR: 'procesos.editar',
+  PROCESOS_REVISAR: 'procesos.revisar',
+  PROCESOS_APROBAR: 'procesos.aprobar',
+  PROCESOS_ARCHIVAR: 'procesos.archivar',
   DASHBOARD_VER: 'dashboard.ver',
 } as const;
 
@@ -142,11 +156,32 @@ export const ROL_PERMISOS: Record<string, string[]> = {
     PERMISO.ORGANIZACION_EDITAR,
     PERMISO.ORGANIZACION_ACTIVAR,
     PERMISO.BITACORA_VER,
+    PERMISO.PROCESOS_VER,
+    PERMISO.PROCESOS_CREAR,
+    PERMISO.PROCESOS_EDITAR,
+    PERMISO.PROCESOS_REVISAR,
+    PERMISO.PROCESOS_APROBAR,
+    PERMISO.PROCESOS_ARCHIVAR,
     PERMISO.DASHBOARD_VER,
   ],
-  [ROL.RESP_PROCESO]: [PERMISO.ORGANIZACION_VER, PERMISO.DASHBOARD_VER],
-  [ROL.AUDITOR_INTERNO]: [PERMISO.ORGANIZACION_VER, PERMISO.BITACORA_VER, PERMISO.DASHBOARD_VER],
-  [ROL.DIRECCION]: [PERMISO.ORGANIZACION_VER, PERMISO.BITACORA_VER, PERMISO.DASHBOARD_VER],
+  [ROL.RESP_PROCESO]: [
+    PERMISO.ORGANIZACION_VER,
+    PERMISO.PROCESOS_VER,
+    PERMISO.PROCESOS_EDITAR,
+    PERMISO.DASHBOARD_VER,
+  ],
+  [ROL.AUDITOR_INTERNO]: [
+    PERMISO.ORGANIZACION_VER,
+    PERMISO.BITACORA_VER,
+    PERMISO.PROCESOS_VER,
+    PERMISO.DASHBOARD_VER,
+  ],
+  [ROL.DIRECCION]: [
+    PERMISO.ORGANIZACION_VER,
+    PERMISO.BITACORA_VER,
+    PERMISO.PROCESOS_VER,
+    PERMISO.DASHBOARD_VER,
+  ],
   [ROL.COLABORADOR]: [PERMISO.DASHBOARD_VER],
-  [ROL.CONSULTA_EXTERNO]: [PERMISO.DASHBOARD_VER],
+  [ROL.CONSULTA_EXTERNO]: [PERMISO.PROCESOS_VER, PERMISO.DASHBOARD_VER],
 };

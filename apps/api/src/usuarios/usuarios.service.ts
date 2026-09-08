@@ -38,6 +38,7 @@ const usuarioListado = {
       expiraAt: true,
       rol: { select: { nombre: true } },
       unidad: { select: { nombre: true } },
+      proceso: { select: { nombre: true, codigo: true } },
     },
   },
 } satisfies Prisma.UsuarioSelect;
@@ -194,7 +195,9 @@ export class UsuariosService {
       if (!unidad) throw new NotFoundException('Unidad organizativa no encontrada');
     }
     if (dto.tipoAlcance === 'PROCESO') {
-      throw new BadRequestException('El alcance por proceso estará disponible en la Fase 2');
+      if (!dto.procesoId) throw new BadRequestException('Debes indicar el proceso del alcance');
+      const proceso = await this.prisma.proceso.findUnique({ where: { id: dto.procesoId } });
+      if (!proceso) throw new NotFoundException('Proceso no encontrado');
     }
     if (dto.rolCodigo === ROL.SUPER_ADMIN && dto.tipoAlcance !== 'GLOBAL') {
       throw new BadRequestException('El Super Administrador solo admite alcance global');
@@ -207,6 +210,7 @@ export class UsuariosService {
           rolCodigo: dto.rolCodigo,
           tipoAlcance: dto.tipoAlcance,
           unidadId: dto.tipoAlcance === 'UNIDAD' ? dto.unidadId : null,
+          procesoId: dto.tipoAlcance === 'PROCESO' ? dto.procesoId : null,
           expiraAt: dto.expiraAt ? new Date(dto.expiraAt) : null,
         },
       });
@@ -216,7 +220,12 @@ export class UsuariosService {
         actorEmail: actor.email,
         entidad: 'Usuario',
         entidadId: id,
-        valorNuevo: { rol: dto.rolCodigo, alcance: dto.tipoAlcance, unidadId: dto.unidadId ?? null },
+        valorNuevo: {
+          rol: dto.rolCodigo,
+          alcance: dto.tipoAlcance,
+          unidadId: dto.unidadId ?? null,
+          procesoId: dto.procesoId ?? null,
+        },
       });
       return asignacion;
     } catch (e) {

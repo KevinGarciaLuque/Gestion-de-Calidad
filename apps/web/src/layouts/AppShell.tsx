@@ -33,7 +33,7 @@ interface ItemModulo {
 
 const MODULOS: ItemModulo[] = [
   { key: '/', icon: <DashboardOutlined />, label: 'Panel', permiso: 'dashboard.ver' },
-  { key: '/procesos', icon: <PartitionOutlined />, label: 'Procesos', proximamente: true },
+  { key: '/procesos', icon: <PartitionOutlined />, label: 'Procesos', permiso: 'procesos.ver' },
   { key: '/indicadores', icon: <BarChartOutlined />, label: 'Indicadores', proximamente: true },
   { key: '/riesgos', icon: <WarningOutlined />, label: 'Riesgos', proximamente: true },
   { key: '/documentos', icon: <FileTextOutlined />, label: 'Control documental', proximamente: true },
@@ -53,6 +53,20 @@ const MODULOS: ItemModulo[] = [
     ],
   },
 ]
+
+const RUTAS_MENU = [
+  '/admin/usuarios',
+  '/admin/roles',
+  '/admin/organizacion',
+  '/admin/bitacora',
+  '/procesos',
+  '/',
+]
+
+function claveSeleccionada(pathname: string): string {
+  if (pathname === '/') return '/'
+  return RUTAS_MENU.find((r) => r !== '/' && pathname.startsWith(r)) ?? pathname
+}
 
 export function AppShell() {
   const [colapsado, setColapsado] = useState(false)
@@ -116,7 +130,7 @@ export function AppShell() {
         <Menu
           theme="dark"
           mode="inline"
-          selectedKeys={[location.pathname]}
+          selectedKeys={[claveSeleccionada(location.pathname)]}
           defaultOpenKeys={['admin']}
           items={items}
           onClick={({ key }) => {

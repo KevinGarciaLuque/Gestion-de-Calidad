@@ -4,6 +4,8 @@ import { AppShell } from '@/layouts/AppShell'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { LoginPage } from '@/pages/LoginPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
+import { MapaProcesosPage } from '@/features/procesos/MapaProcesosPage'
+import { ProcesoFichaPage } from '@/features/procesos/ProcesoFichaPage'
 import { UsuariosPage } from '@/features/usuarios/UsuariosPage'
 import { RolesPage } from '@/features/roles/RolesPage'
 import { OrganizacionPage } from '@/features/organizacion/OrganizacionPage'
@@ -24,6 +26,22 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <DashboardPage /> },
       { path: 'perfil', element: <PerfilPage /> },
+      {
+        path: 'procesos',
+        element: (
+          <ProtectedRoute permiso="procesos.ver">
+            <MapaProcesosPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'procesos/:id',
+        element: (
+          <ProtectedRoute permiso="procesos.ver">
+            <ProcesoFichaPage />
+          </ProtectedRoute>
+        ),
+      },
       {
         path: 'admin/usuarios',
         element: (

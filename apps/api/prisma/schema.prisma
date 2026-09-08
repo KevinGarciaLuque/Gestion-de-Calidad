@@ -1,6 +1,7 @@
 // Calidad 360 Hospitalaria — esquema de datos
 // Fase 0: identidad mínima + bitácora (auditoría append-only).
 // Fase 1: roles, permisos, alcance, estructura organizacional y refresh tokens.
+// Fase 2: mapa de procesos, fichas versionadas y relaciones entre procesos.
 
 generator client {
   provider = "prisma-client-js"
@@ -33,6 +34,9 @@ model Usuario {
   refreshTokens       RefreshToken[]
   unidadesResponsable UnidadOrganizativa[] @relation("UnidadResponsable")
   eventos             Bitacora[]           @relation("BitacoraActor")
+  procesosResponsable Proceso[]            @relation("ProcesoResponsable")
+  procesosSuplente    Proceso[]            @relation("ProcesoSuplente")
+  versionesProceso    ProcesoVersion[]     @relation("ProcesoVersionAutoria")
 
   @@map("usuarios")
 }
@@ -98,6 +102,7 @@ model UsuarioRol {
   usuario Usuario             @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
   rol     Rol                 @relation(fields: [rolCodigo], references: [codigo], onDelete: Cascade)
   unidad  UnidadOrganizativa? @relation(fields: [unidadId], references: [id], onDelete: Cascade)
+  proceso Proceso?            @relation(fields: [procesoId], references: [id], onDelete: Cascade)
 
   @@unique([usuarioId, rolCodigo, tipoAlcance, unidadId, procesoId])
   @@index([usuarioId])
@@ -139,7 +144,6 @@ enum TipoUnidad {
 }
 
 /// Árbol de la organización: hospital/sede → direcciones → departamentos/servicios → áreas.
-/// Los procesos y subprocesos se añaden en la Fase 2.
 model UnidadOrganizativa {
   id            String     @id @default(uuid())
   codigo        String     @unique
@@ -156,9 +160,121 @@ model UnidadOrganizativa {
   hijos       UnidadOrganizativa[] @relation("Jerarquia")
   responsable Usuario?             @relation("UnidadResponsable", fields: [responsableId], references: [id], onDelete: SetNull)
   rolesAlcance UsuarioRol[]
+  procesos    Proceso[]
 
   @@index([padreId])
   @@map("unidades_organizativas")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Procesos (Fase 2)
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum TipoProceso {
+  ESTRATEGICO
+  MISIONAL
+  APOYO
+}
+
+enum EstadoProceso {
+  BORRADOR
+  VIGENTE
+  ARCHIVADO
+}
+
+enum EstadoVersionProceso {
+  BORRADOR
+  EN_REVISION
+  APROBADA
+  OBSOLETA
+}
+
+enum TipoRelacionProceso {
+  PROVEEDOR
+  CLIENTE
+}
+
+/// Proceso del SGC. Los datos de la "ficha de caracterización" viven en las
+/// versiones (ProcesoVersion) para conservar el historial completo.
+model Proceso {
+  id                  String        @id @default(uuid())
+  codigo              String        @unique
+  nombre              String
+  tipo                TipoProceso
+  objetivo            String        @db.Text
+  areaId              String?       @map("area_id")
+  responsableId       String?       @map("responsable_id")
+  suplenteId          String?       @map("suplente_id")
+  estado              EstadoProceso @default(BORRADOR)
+  ultimaAprobacionAt  DateTime?     @map("ultima_aprobacion_at")
+  proximaRevisionAt   DateTime?     @map("proxima_revision_at")
+  archivadoAt         DateTime?     @map("archivado_at")
+  creadoAt            DateTime      @default(now()) @map("creado_at")
+  actualizadoAt       DateTime      @updatedAt @map("actualizado_at")
+
+  area        UnidadOrganizativa? @relation(fields: [areaId], references: [id], onDelete: SetNull)
+  responsable Usuario?            @relation("ProcesoResponsable", fields: [responsableId], references: [id], onDelete: SetNull)
+  suplente    Usuario?            @relation("ProcesoSuplente", fields: [suplenteId], references: [id], onDelete: SetNull)
+
+  versiones      ProcesoVersion[]
+  relaciones     ProcesoRelacion[] @relation("ProcesoOrigen")
+  relacionadoPor ProcesoRelacion[] @relation("ProcesoDestino")
+  rolesAlcance   UsuarioRol[]
+
+  @@index([tipo])
+  @@index([areaId])
+  @@map("procesos")
+}
+
+/// Una versión de la ficha de caracterización de un proceso.
+model ProcesoVersion {
+  id         String               @id @default(uuid())
+  procesoId  String               @map("proceso_id")
+  numero     Int
+  estado     EstadoVersionProceso @default(BORRADOR)
+
+  // Contenido de la ficha
+  alcance     String  @db.Text
+  entradas    Json    @default("[]") // [{ proveedor, insumo, requisitos }]
+  actividades Json    @default("[]") // [{ orden, actividad, responsable, puntoControl }]
+  salidas     Json    @default("[]") // [{ salida, registro, cliente }]
+  recursos    Json    @default("[]") // [{ tipo, detalle }]
+  notas       String? @db.Text
+
+  // Trazabilidad del flujo de aprobación
+  propuestaPorId String?   @map("propuesta_por_id")
+  revisadaPorId  String?   @map("revisada_por_id")
+  aprobadaPorId  String?   @map("aprobada_por_id")
+  enviadaRevisionAt DateTime? @map("enviada_revision_at")
+  aprobadaAt     DateTime? @map("aprobada_at")
+  comentarioRevision String? @map("comentario_revision") @db.Text
+
+  creadoAt      DateTime @default(now()) @map("creado_at")
+  actualizadoAt DateTime @updatedAt @map("actualizado_at")
+
+  proceso     Proceso  @relation(fields: [procesoId], references: [id], onDelete: Cascade)
+  propuestaPor Usuario? @relation("ProcesoVersionAutoria", fields: [propuestaPorId], references: [id], onDelete: SetNull)
+
+  @@unique([procesoId, numero])
+  @@index([procesoId, estado])
+  @@map("procesos_versiones")
+}
+
+/// Relación proveedor/cliente interno entre dos procesos (handoff).
+model ProcesoRelacion {
+  id          String              @id @default(uuid())
+  origenId    String              @map("origen_id")
+  destinoId   String              @map("destino_id")
+  tipo        TipoRelacionProceso
+  descripcion String?             @db.Text
+  creadoAt    DateTime            @default(now()) @map("creado_at")
+
+  origen  Proceso @relation("ProcesoOrigen", fields: [origenId], references: [id], onDelete: Cascade)
+  destino Proceso @relation("ProcesoDestino", fields: [destinoId], references: [id], onDelete: Cascade)
+
+  @@unique([origenId, destinoId, tipo])
+  @@index([destinoId])
+  @@map("procesos_relaciones")
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

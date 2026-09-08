@@ -71,7 +71,8 @@ npm run dev
 - **Fase 0 — Fundaciones** ✅ estructura, stack, base de datos, layout base, bitácora.
 - **Fase 1 — Identidad y acceso** ✅ login (JWT + refresh), usuarios, roles + permisos + alcance,
   estructura organizacional, bitácora, cambio de contraseña obligatorio.
-- **Fase 2** Mapa y gestión de procesos.
+- **Fase 2** ✅ mapa de procesos, ficha de caracterización versionada, flujo de aprobación
+  (borrador → revisión → aprobada), relaciones proveedor/cliente, alcance de permisos por proceso.
 - **Fase 3** Indicadores / KPI.
 - **Fase 4** Riesgos y oportunidades.
 - **Fase 5** Control documental.

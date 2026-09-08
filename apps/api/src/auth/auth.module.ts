@@ -7,6 +7,7 @@ import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { PermisosGuard } from './guards/permisos.guard';
 import { JwtStrategy } from './jwt.strategy';
+import { AlcanceService } from './rbac/alcance.service';
 import { TokensService } from './tokens.service';
 import { UsuarioContextoService } from './usuario-contexto.service';
 
@@ -18,10 +19,11 @@ import { UsuarioContextoService } from './usuario-contexto.service';
     AuthService,
     TokensService,
     UsuarioContextoService,
+    AlcanceService,
     JwtStrategy,
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: PermisosGuard },
   ],
-  exports: [UsuarioContextoService],
+  exports: [UsuarioContextoService, AlcanceService],
 })
 export class AuthModule {}

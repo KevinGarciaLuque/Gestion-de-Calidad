@@ -6,6 +6,8 @@ import type { Dayjs } from 'dayjs'
 import { mensajeDeError } from '@/lib/api'
 import { rolesApi } from '@/features/roles/rolesApi'
 import { aplanar, organizacionApi } from '@/features/organizacion/organizacionApi'
+import { procesosApi } from '@/features/procesos/procesosApi'
+import { useAuth } from '@/features/auth/useAuth'
 import type { TipoAlcance } from '@/lib/tipos'
 import { usuariosApi, type UsuarioFila } from './usuariosApi'
 
@@ -13,6 +15,7 @@ interface FormRol {
   rolCodigo: string
   tipoAlcance: TipoAlcance
   unidadId?: string
+  procesoId?: string
   expiraAt?: Dayjs
 }
 
@@ -26,12 +29,18 @@ export function GestionRolesModal({
   onCambio: () => void
 }) {
   const { message } = App.useApp()
+  const { puede } = useAuth()
   const qc = useQueryClient()
   const [form] = Form.useForm<FormRol>()
   const [alcance, setAlcance] = useState<TipoAlcance>('GLOBAL')
 
   const { data: roles } = useQuery({ queryKey: ['roles'], queryFn: rolesApi.listar })
   const { data: arbol } = useQuery({ queryKey: ['organizacion'], queryFn: organizacionApi.arbol })
+  const { data: procesos } = useQuery({
+    queryKey: ['procesos-lista'],
+    queryFn: () => procesosApi.listar({ pagina: 1 }),
+    enabled: puede('procesos.ver'),
+  })
 
   // Se relee el usuario para reflejar cambios sin cerrar el modal.
   const { data: usuarioActual } = useQuery({
@@ -51,6 +60,7 @@ export function GestionRolesModal({
         rolCodigo: v.rolCodigo,
         tipoAlcance: v.tipoAlcance,
         unidadId: v.tipoAlcance === 'UNIDAD' ? v.unidadId : undefined,
+        procesoId: v.tipoAlcance === 'PROCESO' ? v.procesoId : undefined,
         expiraAt: v.expiraAt?.toISOString(),
       }),
     onSuccess: () => {
@@ -99,7 +109,7 @@ export function GestionRolesModal({
                   ? 'Alcance global'
                   : r.tipoAlcance === 'UNIDAD'
                     ? `Unidad: ${r.unidad?.nombre ?? '—'}`
-                    : 'Proceso'}
+                    : `Proceso: ${r.proceso?.codigo ?? '—'}`}
               </span>
               {r.expiraAt && <Tag color="gold">expira {r.expiraAt.slice(0, 10)}</Tag>}
             </Space>
@@ -130,7 +140,7 @@ export function GestionRolesModal({
             options={[
               { value: 'GLOBAL', label: 'Global (toda la organización)' },
               { value: 'UNIDAD', label: 'Una unidad organizativa' },
-              { value: 'PROCESO', label: 'Un proceso (disponible en la Fase 2)', disabled: true },
+              { value: 'PROCESO', label: 'Un proceso específico' },
             ]}
           />
         </Form.Item>
@@ -142,6 +152,23 @@ export function GestionRolesModal({
             rules={[{ required: true, message: 'Elige la unidad' }]}
           >
             <Select showSearch optionFilterProp="label" options={opcionesUnidad} />
+          </Form.Item>
+        )}
+
+        {alcance === 'PROCESO' && (
+          <Form.Item
+            name="procesoId"
+            label="Proceso"
+            rules={[{ required: true, message: 'Elige el proceso' }]}
+          >
+            <Select
+              showSearch
+              optionFilterProp="label"
+              options={(procesos?.datos ?? []).map((p) => ({
+                value: p.id,
+                label: `${p.codigo} · ${p.nombre}`,
+              }))}
+            />
           </Form.Item>
         )}
 

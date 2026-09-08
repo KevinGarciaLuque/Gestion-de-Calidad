@@ -10,6 +10,7 @@ export interface RolAsignado {
   expiraAt: string | null
   rol: { nombre: string }
   unidad: { nombre: string } | null
+  proceso: { nombre: string; codigo: string } | null
 }
 
 export interface UsuarioFila {
@@ -34,6 +35,7 @@ export interface AsignarRolPayload {
   rolCodigo: string
   tipoAlcance: TipoAlcance
   unidadId?: string
+  procesoId?: string
   expiraAt?: string
 }
 

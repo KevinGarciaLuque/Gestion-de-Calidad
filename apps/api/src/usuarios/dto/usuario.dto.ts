@@ -59,6 +59,10 @@ export class AsignarRolDto {
   unidadId?: string;
 
   @IsOptional()
+  @IsString()
+  procesoId?: string;
+
+  @IsOptional()
   @IsISO8601()
   expiraAt?: string;
 }

@@ -12,6 +12,7 @@ import { HealthModule } from './health/health.module';
 import { UsuariosModule } from './usuarios/usuarios.module';
 import { RolesModule } from './roles/roles.module';
 import { OrganizacionModule } from './organizacion/organizacion.module';
+import { ProcesosModule } from './procesos/procesos.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { OrganizacionModule } from './organizacion/organizacion.module';
     UsuariosModule,
     RolesModule,
     OrganizacionModule,
+    ProcesosModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: HttpExceptionFilter },
