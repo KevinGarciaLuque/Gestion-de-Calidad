@@ -4,7 +4,7 @@ import type { UsuarioActual } from '../auth/rbac/usuario-actual';
 import { BitacoraService } from '../common/bitacora/bitacora.service';
 import { PrismaService } from '../prisma/prisma.service';
 
-export type EntidadEvidencia = 'AuditoriaItem' | 'Hallazgo';
+export type EntidadEvidencia = 'AuditoriaItem' | 'Hallazgo' | 'Accion';
 
 @Injectable()
 export class EvidenciasService {

@@ -17,6 +17,10 @@ import { AuditoriasPage } from '@/features/auditorias/AuditoriasPage'
 import { AuditoriaDetallePage } from '@/features/auditorias/AuditoriaDetallePage'
 import { HallazgosPage } from '@/features/hallazgos/HallazgosPage'
 import { HallazgoDetallePage } from '@/features/hallazgos/HallazgoDetallePage'
+import { AccionesPage } from '@/features/acciones/AccionesPage'
+import { AccionDetallePage } from '@/features/acciones/AccionDetallePage'
+import { MccPage } from '@/features/mcc/MccPage'
+import { MccDetallePage } from '@/features/mcc/MccDetallePage'
 import { UsuariosPage } from '@/features/usuarios/UsuariosPage'
 import { RolesPage } from '@/features/roles/RolesPage'
 import { OrganizacionPage } from '@/features/organizacion/OrganizacionPage'
@@ -138,6 +142,38 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute permiso="hallazgos.ver">
             <HallazgoDetallePage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'acciones',
+        element: (
+          <ProtectedRoute permiso="acciones.ver">
+            <AccionesPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'acciones/:id',
+        element: (
+          <ProtectedRoute permiso="acciones.ver">
+            <AccionDetallePage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'mcc',
+        element: (
+          <ProtectedRoute permiso="mcc.ver">
+            <MccPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'mcc/:id',
+        element: (
+          <ProtectedRoute permiso="mcc.ver">
+            <MccDetallePage />
           </ProtectedRoute>
         ),
       },

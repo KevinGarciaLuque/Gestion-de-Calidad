@@ -6,6 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { EstadoHallazgo, Prisma } from '@prisma/client';
+import { AccionesService } from '../acciones/acciones.service';
 import { AlcanceService } from '../auth/rbac/alcance.service';
 import { PERMISO } from '../auth/rbac/permisos.catalog';
 import type { UsuarioActual } from '../auth/rbac/usuario-actual';
@@ -47,6 +48,7 @@ export class HallazgosService {
     private readonly prisma: PrismaService,
     private readonly alcance: AlcanceService,
     private readonly bitacora: BitacoraService,
+    private readonly acciones: AccionesService,
   ) {}
 
   // ── Consultas ──────────────────────────────────────────────────────────
@@ -82,11 +84,13 @@ export class HallazgosService {
     if (!(await this.puedeVer(h, actor))) throw new ForbiddenException('No tienes acceso a este hallazgo');
     const editar = await this.puedeEditar(h, actor);
     const gestionar = actor.esSuperAdmin || actor.permisos.includes(PERMISO.HALLAZGOS_CERRAR);
+    const accionesResumen = await this.acciones.resumenPorHallazgo(h.id);
 
     return {
       hallazgo: this.detalle(h),
       analisis: h.analisisCausa,
       eventos: h.eventos,
+      accionesResumen,
       puede: {
         editar,
         gestionar,
@@ -282,6 +286,12 @@ export class HallazgosService {
     const h = await this.exige(id);
     if (!(await this.puedeEditar(h, actor))) throw new ForbiddenException('No tienes permiso');
     if (h.estado !== 'EN_EJECUCION') throw new BadRequestException('El hallazgo no está en ejecución');
+    const acc = await this.acciones.resumenPorHallazgo(id);
+    if (acc.total > 0 && !acc.todasListas) {
+      throw new BadRequestException(
+        `Faltan ${acc.total - acc.cerradas} acción(es) del plan por completar`,
+      );
+    }
     await this.prisma.hallazgo.update({ where: { id }, data: { estado: 'PENDIENTE_EFICACIA' } });
     await this.evento(id, 'acciones_completas', dto.comentario ?? null, 'PENDIENTE_EFICACIA', actor);
     return this.obtener(id, actor);

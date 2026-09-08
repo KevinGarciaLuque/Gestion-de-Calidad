@@ -24,6 +24,8 @@ import dayjs from 'dayjs'
 import { mensajeDeError } from '@/lib/api'
 import { SemaforoDot } from '@/components/Semaforo'
 import { ETIQUETA_FRECUENCIA, indicadoresApi, type Medicion } from './indicadoresApi'
+import { AccionFormModal } from '@/features/acciones/AccionFormModal'
+import { useAuth } from '@/features/auth/useAuth'
 import { IconoTendencia, semEstado } from './IndicadoresPage'
 import { IndicadorFormModal } from './IndicadorFormModal'
 import { RegistrarMedicionModal } from './RegistrarMedicionModal'
@@ -36,9 +38,11 @@ export function IndicadorDetallePage() {
   const navigate = useNavigate()
   const qc = useQueryClient()
   const { message, modal } = App.useApp()
+  const { puede: tienePermiso } = useAuth()
   const [editar, setEditar] = useState(false)
   const [registrar, setRegistrar] = useState(false)
   const [analizando, setAnalizando] = useState<Medicion | null>(null)
+  const [accionDe, setAccionDe] = useState<Medicion | null>(null)
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['indicador', id],
@@ -115,6 +119,11 @@ export function IndicadorDetallePage() {
       width: 160,
       render: (_, m) => (
         <Space>
+          {m.semaforo !== 'VERDE' && tienePermiso('acciones.crear') && (
+            <Button size="small" onClick={() => setAccionDe(m)}>
+              Crear acción
+            </Button>
+          )}
           {puede.analizar && (m.requiereAnalisis || m.analisis) && (
             <Button size="small" onClick={() => setAnalizando(m)}>
               {m.analisis ? 'Editar análisis' : 'Analizar'}
@@ -327,6 +336,16 @@ export function IndicadorDetallePage() {
           onGuardado={() => {
             setAnalizando(null)
             refrescar()
+          }}
+        />
+      )}
+      {accionDe && (
+        <AccionFormModal
+          origenFijo={{ origen: 'INDICADOR', medicionId: accionDe.id, tipoSugerido: 'MEJORA' }}
+          onClose={() => setAccionDe(null)}
+          onGuardado={() => {
+            setAccionDe(null)
+            message.success('Acción de mejora creada')
           }}
         />
       )}

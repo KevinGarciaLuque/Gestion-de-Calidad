@@ -1,6 +1,7 @@
 import {
   AuditOutlined,
   BarChartOutlined,
+  BulbOutlined,
   CalendarOutlined,
   DashboardOutlined,
   FileTextOutlined,
@@ -39,7 +40,8 @@ const MODULOS: ItemModulo[] = [
   { key: '/documentos', icon: <FileTextOutlined />, label: 'Control documental', permiso: 'documentos.ver' },
   { key: '/auditorias', icon: <AuditOutlined />, label: 'Auditorías', permiso: 'auditorias.ver' },
   { key: '/hallazgos', icon: <SafetyOutlined />, label: 'Hallazgos y NC', permiso: 'hallazgos.ver' },
-  { key: '/acciones', icon: <ThunderboltOutlined />, label: 'Planes y acciones', proximamente: true },
+  { key: '/acciones', icon: <ThunderboltOutlined />, label: 'Planes y acciones', permiso: 'acciones.ver' },
+  { key: '/mcc', icon: <BulbOutlined />, label: 'Mejora continua', permiso: 'mcc.ver' },
   { key: '/calendario', icon: <CalendarOutlined />, label: 'Calendario', proximamente: true },
   {
     key: 'admin',
@@ -65,6 +67,8 @@ const RUTAS_MENU = [
   '/documentos',
   '/auditorias',
   '/hallazgos',
+  '/acciones',
+  '/mcc',
   '/',
 ]
 

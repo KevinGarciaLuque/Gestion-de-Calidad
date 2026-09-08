@@ -7,6 +7,7 @@
 // Fase 5: control documental — documentos versionados, archivos y lista maestra.
 // Fase 6: auditorías — programa anual, planes, checklist, hallazgos e informe.
 // Fase 7: hallazgos — análisis de causa, máquina de estados y verificación de eficacia.
+// Fase 8: planes de mejora, acciones (CAPA) y registro de mejora continua (MCC).
 
 generator client {
   provider = "prisma-client-js"
@@ -58,6 +59,12 @@ model Usuario {
   hallazgosDetectados Hallazgo[]         @relation("HallazgoDetectadoPor")
   hallazgosResponsable Hallazgo[]        @relation("HallazgoResponsable")
   evidenciasSubidas  Evidencia[]        @relation("EvidenciaSubidaPor")
+  accionesResponsable Accion[]          @relation("AccionResponsable")
+  accionesColaborador AccionColaborador[]
+  accionesVerificadas Accion[]          @relation("AccionVerificadaPor")
+  avancesAccion      AvanceAccion[]     @relation("AvanceAccionPor")
+  mccPropuestos     RegistroMCC[]       @relation("MCCPropuestoPor")
+  mccGestionados    RegistroMCC[]       @relation("MCCGestionadoPor")
 
   @@map("usuarios")
 }
@@ -185,6 +192,7 @@ model UnidadOrganizativa {
   documentos  Documento[]
   auditorias  Auditoria[]
   hallazgos   Hallazgo[]
+  registrosMCC RegistroMCC[]
 
   @@index([padreId])
   @@map("unidades_organizativas")
@@ -250,6 +258,7 @@ model Proceso {
   auditorias     Auditoria[]
   auditoriaItems AuditoriaItem[]
   hallazgos      Hallazgo[]
+  acciones       Accion[]
 
   @@index([tipo])
   @@index([areaId])
@@ -385,6 +394,7 @@ model MedicionIndicador {
   indicador    Indicador @relation(fields: [indicadorId], references: [id], onDelete: Cascade)
   capturadoPor Usuario?  @relation("MedicionCapturaPor", fields: [capturadoPorId], references: [id], onDelete: SetNull)
   analizadoPor Usuario?  @relation("MedicionAnalisisPor", fields: [analizadoPorId], references: [id], onDelete: SetNull)
+  acciones     Accion[]
 
   @@unique([indicadorId, anio, periodo])
   @@index([indicadorId])
@@ -475,6 +485,7 @@ model Riesgo {
   proceso     Proceso  @relation(fields: [procesoId], references: [id], onDelete: Cascade)
   responsable Usuario? @relation("RiesgoResponsable", fields: [responsableId], references: [id], onDelete: SetNull)
   revisiones  RevisionRiesgo[]
+  acciones    Accion[]
 
   @@index([procesoId])
   @@index([tipo])
@@ -803,6 +814,7 @@ model Hallazgo {
   responsable   Usuario?       @relation("HallazgoResponsable", fields: [responsableId], references: [id], onDelete: SetNull)
   analisisCausa AnalisisCausa?
   eventos       EventoHallazgo[]
+  acciones      Accion[]
 
   @@index([origen])
   @@index([estado])
@@ -894,4 +906,182 @@ model Bitacora {
   @@index([actorId])
   @@index([entidad, entidadId])
   @@map("bitacora")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Acciones / CAPA (Fase 8)
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum TipoAccion {
+  CORRECCION
+  ACCION_CORRECTIVA
+  TRATAMIENTO_RIESGO
+  MEJORA
+}
+
+enum OrigenAccion {
+  HALLAZGO
+  RIESGO
+  INDICADOR
+  AUDITORIA
+  COMITE
+  MCC
+  OTRO
+}
+
+enum EstadoAccion {
+  PENDIENTE
+  EN_CURSO
+  COMPLETADA
+  VERIFICADA
+  CANCELADA
+}
+
+model Accion {
+  id              String       @id @default(uuid())
+  codigo          String       @unique
+  tipo            TipoAccion
+  descripcion     String       @db.Text
+  resultadoEsperado String?    @map("resultado_esperado") @db.Text
+
+  origen          OrigenAccion
+  origenLibre     String?      @map("origen_libre")
+  hallazgoId      String?      @map("hallazgo_id")
+  riesgoId        String?      @map("riesgo_id")
+  medicionId      String?      @map("medicion_id")
+  procesoId       String?      @map("proceso_id")
+  mccId           String?      @map("mcc_id")
+
+  responsableId   String?      @map("responsable_id")
+  fechaInicio     DateTime?    @map("fecha_inicio")
+  fechaCompromiso DateTime?    @map("fecha_compromiso")
+  prioridad       PrioridadHallazgo @default(MEDIA)
+  evidenciaRequerida String?   @map("evidencia_requerida") @db.Text
+  avance          Int          @default(0)
+  estado          EstadoAccion @default(PENDIENTE)
+
+  verificacionEficacia String? @map("verificacion_eficacia") @db.Text
+  eficaz          Boolean?
+  verificadoPorId String?      @map("verificado_por_id")
+  verificadoAt    DateTime?    @map("verificado_at")
+  fechaCierre     DateTime?    @map("fecha_cierre")
+  archivadoAt     DateTime?    @map("archivado_at")
+  creadoAt        DateTime     @default(now()) @map("creado_at")
+  actualizadoAt   DateTime     @updatedAt @map("actualizado_at")
+
+  hallazgo    Hallazgo?          @relation(fields: [hallazgoId], references: [id], onDelete: Cascade)
+  riesgo      Riesgo?            @relation(fields: [riesgoId], references: [id], onDelete: Cascade)
+  medicion    MedicionIndicador? @relation(fields: [medicionId], references: [id], onDelete: SetNull)
+  proceso     Proceso?           @relation(fields: [procesoId], references: [id], onDelete: SetNull)
+  mcc         RegistroMCC?       @relation(fields: [mccId], references: [id], onDelete: SetNull)
+  responsable Usuario?           @relation("AccionResponsable", fields: [responsableId], references: [id], onDelete: SetNull)
+  verificadoPor Usuario?         @relation("AccionVerificadaPor", fields: [verificadoPorId], references: [id], onDelete: SetNull)
+  colaboradores AccionColaborador[]
+  avances     AvanceAccion[]
+
+  @@index([hallazgoId])
+  @@index([riesgoId])
+  @@index([estado])
+  @@map("acciones")
+}
+
+model AccionColaborador {
+  accionId  String @map("accion_id")
+  usuarioId String @map("usuario_id")
+
+  accion  Accion  @relation(fields: [accionId], references: [id], onDelete: Cascade)
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@id([accionId, usuarioId])
+  @@map("acciones_colaboradores")
+}
+
+/// Cada actualización de avance de una acción.
+model AvanceAccion {
+  id         String   @id @default(uuid())
+  accionId   String   @map("accion_id")
+  fecha      DateTime @default(now())
+  avance     Int
+  comentario String?  @db.Text
+  estadoNuevo EstadoAccion? @map("estado_nuevo")
+  porId      String?  @map("por_id")
+  porNombre  String?  @map("por_nombre")
+
+  accion Accion   @relation(fields: [accionId], references: [id], onDelete: Cascade)
+  por    Usuario? @relation("AvanceAccionPor", fields: [porId], references: [id], onDelete: SetNull)
+
+  @@index([accionId])
+  @@map("avances_accion")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Registro de Mejora Continua de la Calidad — MCC (Fase 8)
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum OrigenMCC {
+  COLABORADOR
+  AREA
+  ENCUESTA
+  INDICADOR
+  AUDITORIA
+  COMITE
+  OTRO
+}
+
+enum EstadoMCC {
+  NUEVO
+  EN_REVISION
+  ACEPTADO
+  NO_PROCEDE
+  EN_EJECUCION
+  VERIFICACION
+  CERRADO
+}
+
+model RegistroMCC {
+  id            String    @id @default(uuid())
+  codigo        String    @unique
+  titulo        String
+  descripcion   String    @db.Text
+  origen        OrigenMCC
+  origenDetalle String?   @map("origen_detalle")
+  areaId        String?   @map("area_id")
+  propuestoPorId String?  @map("propuesto_por_id")
+  estado        EstadoMCC @default(NUEVO)
+
+  // Clasificación de Calidad
+  impacto       String?   // libre: alto/medio/bajo o texto
+  prioridad     PrioridadHallazgo?
+  clasificadoPorId String? @map("clasificado_por_id")
+  decisionJustificacion String? @map("decision_justificacion") @db.Text
+  evaluacionResultado String? @map("evaluacion_resultado") @db.Text
+  aprendizaje   String?   @db.Text
+  fechaCierre   DateTime? @map("fecha_cierre")
+  archivadoAt   DateTime? @map("archivado_at")
+  creadoAt      DateTime  @default(now()) @map("creado_at")
+  actualizadoAt DateTime  @updatedAt @map("actualizado_at")
+
+  area        UnidadOrganizativa? @relation(fields: [areaId], references: [id], onDelete: SetNull)
+  propuestoPor Usuario?           @relation("MCCPropuestoPor", fields: [propuestoPorId], references: [id], onDelete: SetNull)
+  gestionadoPor Usuario?          @relation("MCCGestionadoPor", fields: [clasificadoPorId], references: [id], onDelete: SetNull)
+  acciones    Accion[]
+  eventos     EventoMCC[]
+
+  @@index([estado])
+  @@map("registros_mcc")
+}
+
+model EventoMCC {
+  id       String   @id @default(uuid())
+  mccId    String   @map("mcc_id")
+  fecha    DateTime @default(now())
+  tipo     String
+  detalle  String?  @db.Text
+  estadoNuevo EstadoMCC? @map("estado_nuevo")
+  actorNombre String? @map("actor_nombre")
+
+  mcc RegistroMCC @relation(fields: [mccId], references: [id], onDelete: Cascade)
+
+  @@index([mccId])
+  @@map("eventos_mcc")
 }

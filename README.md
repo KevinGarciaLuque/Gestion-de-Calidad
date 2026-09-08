@@ -88,6 +88,8 @@ npm run dev
 - **Fase 7** ✅ hallazgos y no conformidades — ciclo completo: análisis de causa
   (5 porqués / Ishikawa / lluvia de causas), máquina de estados con transiciones
   guardadas, evidencias adjuntas, verificación de eficacia y línea de tiempo.
-- **Fase 8** Planes de mejora y acciones (CAPA).
+- **Fase 8** ✅ planes de mejora y acciones (CAPA): acciones individuales rastreables con
+  origen (hallazgo / riesgo / indicador / comité / MCC), % de avance con historial,
+  evidencias y verificación de eficacia. Incluye el registro de Mejora Continua (MCC).
 - **Fase 9** Motor de automatizaciones + calendario y notificaciones.
 - **Fase 10** Dashboard gerencial + reportes → **fin del MVP**.

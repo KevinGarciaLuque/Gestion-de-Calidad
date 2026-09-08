@@ -120,6 +120,7 @@ export interface HallazgoDetalle {
   }
   analisis: AnalisisCausa | null
   eventos: EventoHallazgo[]
+  accionesResumen: { total: number; cerradas: number; todasListas: boolean }
   puede: {
     editar: boolean
     gestionar: boolean

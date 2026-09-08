@@ -19,6 +19,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import dayjs from 'dayjs'
 import { mensajeDeError } from '@/lib/api'
+import { AccionesDeCasoTab } from '@/features/acciones/AccionesDeCasoTab'
 import { AnalisisCausaTab } from './AnalisisCausaTab'
 import { EvidenciasPanel } from './EvidenciasPanel'
 import { HallazgoFormModal } from './HallazgoFormModal'
@@ -265,8 +266,19 @@ export function HallazgoDetallePage() {
           },
           {
             key: 'plan',
-            label: 'Plan de acción',
-            children: <PlanTab detalle={data} onCambio={refrescar} />,
+            label: `Plan de acción${data.accionesResumen.total ? ` (${data.accionesResumen.cerradas}/${data.accionesResumen.total})` : ''}`,
+            children: (
+              <>
+                <PlanTab detalle={data} onCambio={refrescar} />
+                <div style={{ marginTop: 24 }}>
+                  <AccionesDeCasoTab
+                    origenFijo={{ origen: 'HALLAZGO', hallazgoId: id, tipoSugerido: 'ACCION_CORRECTIVA' }}
+                    filtro={{ hallazgoId: id }}
+                    resumen={{ total: data.accionesResumen.total, cerradas: data.accionesResumen.cerradas }}
+                  />
+                </div>
+              </>
+            ),
           },
           {
             key: 'evidencias',
@@ -350,8 +362,8 @@ function PlanTab({
   return (
     <Space direction="vertical" size={12} style={{ width: '100%' }}>
       <Text type="secondary">
-        Describe aquí las acciones correctivas. El seguimiento de cada acción individual (responsable,
-        fecha, evidencia) llega con el módulo de Planes de mejora (Fase 8).
+        Resumen del plan de acción. Cada acción individual (responsable, avance, evidencia,
+        verificación de eficacia) se gestiona en la lista de abajo.
       </Text>
       <Input.TextArea
         rows={8}

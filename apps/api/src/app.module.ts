@@ -20,6 +20,8 @@ import { RiesgosModule } from './riesgos/riesgos.module';
 import { DocumentosModule } from './documentos/documentos.module';
 import { AuditoriasModule } from './auditorias/auditorias.module';
 import { HallazgosModule } from './hallazgos/hallazgos.module';
+import { AccionesModule } from './acciones/acciones.module';
+import { MccModule } from './mcc/mcc.module';
 
 @Module({
   imports: [
@@ -44,6 +46,8 @@ import { HallazgosModule } from './hallazgos/hallazgos.module';
     DocumentosModule,
     AuditoriasModule,
     HallazgosModule,
+    AccionesModule,
+    MccModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: HttpExceptionFilter },

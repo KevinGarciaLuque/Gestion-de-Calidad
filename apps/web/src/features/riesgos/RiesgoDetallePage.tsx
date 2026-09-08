@@ -19,6 +19,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import dayjs from 'dayjs'
 import { mensajeDeError } from '@/lib/api'
+import { AccionesDeCasoTab } from '@/features/acciones/AccionesDeCasoTab'
 import { CategoriaTag } from './categoria'
 import { EditarRiesgoModal } from './EditarRiesgoModal'
 import { ReevaluarModal } from './ReevaluarModal'
@@ -246,6 +247,16 @@ export function RiesgoDetallePage() {
                   {r.fechaCompromiso ? dayjs(r.fechaCompromiso).format('DD/MM/YYYY') : '—'}
                 </Descriptions.Item>
               </Descriptions>
+            ),
+          },
+          {
+            key: 'acciones',
+            label: 'Acciones',
+            children: (
+              <AccionesDeCasoTab
+                origenFijo={{ origen: 'RIESGO', riesgoId: id, tipoSugerido: 'TRATAMIENTO_RIESGO' }}
+                filtro={{ riesgoId: id }}
+              />
             ),
           },
           {
