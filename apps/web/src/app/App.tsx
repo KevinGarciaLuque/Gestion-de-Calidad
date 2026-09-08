@@ -6,6 +6,7 @@ import { RouterProvider } from 'react-router-dom'
 import dayjs from 'dayjs'
 import 'dayjs/locale/es'
 import { queryClient } from '@/lib/queryClient'
+import { configurarAuthEvents } from '@/lib/api'
 import { useAuthStore } from '@/features/auth/authStore'
 import { router } from './router'
 import { themeCalidad360 } from './theme'
@@ -13,14 +14,14 @@ import { themeCalidad360 } from './theme'
 dayjs.locale('es')
 
 export function App() {
-  const setCargando = useAuthStore((s) => s.setCargando)
+  const bootstrap = useAuthStore((s) => s.bootstrap)
 
-  // Bootstrap de sesión.
-  // Fase 1: aquí se llamará a POST /api/auth/refresh para restaurar la sesión
-  // desde la cookie httpOnly. Por ahora simplemente terminamos la carga.
   useEffect(() => {
-    setCargando(false)
-  }, [setCargando])
+    configurarAuthEvents({
+      onSesionExpirada: () => useAuthStore.getState().limpiarSesion(),
+    })
+    void bootstrap()
+  }, [bootstrap])
 
   return (
     <ConfigProvider locale={esES} theme={themeCalidad360}>

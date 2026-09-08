@@ -14,7 +14,7 @@ import {
 } from '@ant-design/icons'
 import { Avatar, Dropdown, Layout, Menu, Typography } from 'antd'
 import type { MenuProps } from 'antd'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/features/auth/useAuth'
 import { useAuthStore } from '@/features/auth/authStore'
@@ -22,25 +22,34 @@ import { useAuthStore } from '@/features/auth/authStore'
 const { Header, Sider, Content } = Layout
 const { Text } = Typography
 
-const itemsMenu: MenuProps['items'] = [
-  { key: '/', icon: <DashboardOutlined />, label: 'Panel' },
-  { key: '/procesos', icon: <PartitionOutlined />, label: 'Procesos', disabled: true },
-  { key: '/indicadores', icon: <BarChartOutlined />, label: 'Indicadores', disabled: true },
-  { key: '/riesgos', icon: <WarningOutlined />, label: 'Riesgos', disabled: true },
-  { key: '/documentos', icon: <FileTextOutlined />, label: 'Control documental', disabled: true },
-  { key: '/auditorias', icon: <AuditOutlined />, label: 'Auditorías', disabled: true },
-  { key: '/hallazgos', icon: <SafetyOutlined />, label: 'Hallazgos y NC', disabled: true },
-  { key: '/acciones', icon: <ThunderboltOutlined />, label: 'Planes y acciones', disabled: true },
-  { key: '/calendario', icon: <CalendarOutlined />, label: 'Calendario', disabled: true },
+interface ItemModulo {
+  key: string
+  icon: React.ReactNode
+  label: string
+  permiso?: string
+  proximamente?: boolean
+  children?: ItemModulo[]
+}
+
+const MODULOS: ItemModulo[] = [
+  { key: '/', icon: <DashboardOutlined />, label: 'Panel', permiso: 'dashboard.ver' },
+  { key: '/procesos', icon: <PartitionOutlined />, label: 'Procesos', proximamente: true },
+  { key: '/indicadores', icon: <BarChartOutlined />, label: 'Indicadores', proximamente: true },
+  { key: '/riesgos', icon: <WarningOutlined />, label: 'Riesgos', proximamente: true },
+  { key: '/documentos', icon: <FileTextOutlined />, label: 'Control documental', proximamente: true },
+  { key: '/auditorias', icon: <AuditOutlined />, label: 'Auditorías', proximamente: true },
+  { key: '/hallazgos', icon: <SafetyOutlined />, label: 'Hallazgos y NC', proximamente: true },
+  { key: '/acciones', icon: <ThunderboltOutlined />, label: 'Planes y acciones', proximamente: true },
+  { key: '/calendario', icon: <CalendarOutlined />, label: 'Calendario', proximamente: true },
   {
     key: 'admin',
     icon: <SettingOutlined />,
     label: 'Administración',
     children: [
-      { key: '/admin/usuarios', label: 'Usuarios', disabled: true },
-      { key: '/admin/roles', label: 'Roles y permisos', disabled: true },
-      { key: '/admin/organizacion', label: 'Estructura organizacional', disabled: true },
-      { key: '/admin/bitacora', label: 'Bitácora', disabled: true },
+      { key: '/admin/usuarios', icon: null, label: 'Usuarios', permiso: 'usuarios.ver' },
+      { key: '/admin/roles', icon: null, label: 'Roles y permisos', permiso: 'roles.ver' },
+      { key: '/admin/organizacion', icon: null, label: 'Estructura organizacional', permiso: 'organizacion.ver' },
+      { key: '/admin/bitacora', icon: null, label: 'Bitácora', permiso: 'bitacora.ver' },
     ],
   },
 ]
@@ -49,11 +58,33 @@ export function AppShell() {
   const [colapsado, setColapsado] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
-  const { usuario } = useAuth()
-  const limpiarSesion = useAuthStore((s) => s.limpiarSesion)
+  const { usuario, puede } = useAuth()
+  const cerrarSesion = useAuthStore((s) => s.cerrarSesion)
+
+  const items = useMemo<MenuProps['items']>(() => {
+    const visible = (m: ItemModulo): boolean =>
+      !!m.proximamente || !m.permiso || puede(m.permiso)
+
+    const resultado: MenuProps['items'] = []
+    for (const m of MODULOS) {
+      if (m.children) {
+        const hijos = m.children.filter(visible)
+        if (hijos.length === 0) continue
+        resultado.push({
+          key: m.key,
+          icon: m.icon,
+          label: m.label,
+          children: hijos.map((c) => ({ key: c.key, label: c.label })),
+        })
+      } else if (visible(m)) {
+        resultado.push({ key: m.key, icon: m.icon, label: m.label, disabled: m.proximamente })
+      }
+    }
+    return resultado
+  }, [puede])
 
   const menuUsuario: MenuProps['items'] = [
-    { key: 'perfil', icon: <UserOutlined />, label: 'Mi perfil', disabled: true },
+    { key: 'perfil', icon: <UserOutlined />, label: 'Mi perfil' },
     { type: 'divider' },
     { key: 'salir', icon: <LogoutOutlined />, label: 'Cerrar sesión', danger: true },
   ]
@@ -76,7 +107,6 @@ export function AppShell() {
             justifyContent: 'center',
             color: '#fff',
             fontWeight: 700,
-            letterSpacing: 0.5,
             gap: 8,
           }}
         >
@@ -88,7 +118,7 @@ export function AppShell() {
           mode="inline"
           selectedKeys={[location.pathname]}
           defaultOpenKeys={['admin']}
-          items={itemsMenu}
+          items={items}
           onClick={({ key }) => {
             if (key.startsWith('/')) navigate(key)
           }}
@@ -112,7 +142,8 @@ export function AppShell() {
             menu={{
               items: menuUsuario,
               onClick: ({ key }) => {
-                if (key === 'salir') limpiarSesion()
+                if (key === 'salir') void cerrarSesion()
+                if (key === 'perfil') navigate('/perfil')
               },
             }}
           >

@@ -43,9 +43,12 @@ cd apps/api
 cp .env.example .env        # ajustar credenciales
 npm install
 npm run db:migrate          # crea las tablas
-npm run db:seed             # datos iniciales (roles, super admin)
+npm run db:seed             # datos iniciales (permisos, roles, super admin)
 npm run start:dev           # http://localhost:3000/api
 ```
+
+**Usuario inicial:** `admin@calidad360.local` / `Admin.123456` (definidos en `.env`;
+al primer ingreso pide cambiar la contraseña).
 
 ### 3. Frontend
 
@@ -66,7 +69,8 @@ npm run dev
 ## Roadmap por fases
 
 - **Fase 0 — Fundaciones** ✅ estructura, stack, base de datos, layout base, bitácora.
-- **Fase 1 — Identidad y acceso** login, usuarios, roles + alcance, estructura organizacional.
+- **Fase 1 — Identidad y acceso** ✅ login (JWT + refresh), usuarios, roles + permisos + alcance,
+  estructura organizacional, bitácora, cambio de contraseña obligatorio.
 - **Fase 2** Mapa y gestión de procesos.
 - **Fase 3** Indicadores / KPI.
 - **Fase 4** Riesgos y oportunidades.

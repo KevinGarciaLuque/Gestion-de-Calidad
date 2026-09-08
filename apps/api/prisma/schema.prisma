@@ -1,6 +1,6 @@
 // Calidad 360 Hospitalaria — esquema de datos
 // Fase 0: identidad mínima + bitácora (auditoría append-only).
-// Las fases siguientes amplían este esquema (roles, alcance, procesos, etc.).
+// Fase 1: roles, permisos, alcance, estructura organizacional y refresh tokens.
 
 generator client {
   provider = "prisma-client-js"
@@ -11,38 +11,174 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-/// Usuarios del sistema. En Fase 1 se les asigna rol + alcance.
-model Usuario {
-  id             String    @id @default(uuid())
-  email          String    @unique
-  nombre         String
-  passwordHash   String    @map("password_hash")
-  activo         Boolean   @default(true)
-  ultimoAccesoAt DateTime? @map("ultimo_acceso_at")
-  intentosFallidos Int     @default(0) @map("intentos_fallidos")
-  bloqueadoHasta DateTime? @map("bloqueado_hasta")
-  creadoAt       DateTime  @default(now()) @map("creado_at")
-  actualizadoAt  DateTime  @updatedAt @map("actualizado_at")
+// ─────────────────────────────────────────────────────────────────────────────
+//  Identidad y acceso
+// ─────────────────────────────────────────────────────────────────────────────
 
-  eventos Bitacora[] @relation("BitacoraActor")
+/// Usuarios del sistema.
+model Usuario {
+  id                  String    @id @default(uuid())
+  email               String    @unique
+  nombre              String
+  passwordHash        String    @map("password_hash")
+  activo              Boolean   @default(true)
+  debeCambiarPassword Boolean   @default(false) @map("debe_cambiar_password")
+  ultimoAccesoAt      DateTime? @map("ultimo_acceso_at")
+  intentosFallidos    Int       @default(0) @map("intentos_fallidos")
+  bloqueadoHasta      DateTime? @map("bloqueado_hasta")
+  creadoAt            DateTime  @default(now()) @map("creado_at")
+  actualizadoAt       DateTime  @updatedAt @map("actualizado_at")
+
+  roles               UsuarioRol[]
+  refreshTokens       RefreshToken[]
+  unidadesResponsable UnidadOrganizativa[] @relation("UnidadResponsable")
+  eventos             Bitacora[]           @relation("BitacoraActor")
 
   @@map("usuarios")
 }
 
+/// Catálogo de roles. Los de sistema no se pueden eliminar.
+model Rol {
+  codigo      String  @id
+  nombre      String
+  descripcion String? @db.Text
+  esSistema   Boolean @default(false) @map("es_sistema")
+  activo      Boolean @default(true)
+  orden       Int     @default(0)
+
+  permisos   RolPermiso[]
+  asignados  UsuarioRol[]
+
+  @@map("roles")
+}
+
+/// Catálogo de permisos (acción sobre un módulo), p. ej. "usuarios.crear".
+model Permiso {
+  codigo      String  @id
+  modulo      String
+  descripcion String
+  orden       Int     @default(0)
+
+  roles RolPermiso[]
+
+  @@index([modulo])
+  @@map("permisos")
+}
+
+/// Relación rol ↔ permiso.
+model RolPermiso {
+  rolCodigo     String  @map("rol_codigo")
+  permisoCodigo String  @map("permiso_codigo")
+
+  rol     Rol     @relation(fields: [rolCodigo], references: [codigo], onDelete: Cascade)
+  permiso Permiso @relation(fields: [permisoCodigo], references: [codigo], onDelete: Cascade)
+
+  @@id([rolCodigo, permisoCodigo])
+  @@map("roles_permisos")
+}
+
+enum TipoAlcance {
+  GLOBAL
+  UNIDAD
+  PROCESO
+}
+
+/// Asignación de un rol a un usuario, con su alcance (global, una unidad, o
+/// —desde la Fase 2— un proceso). Puede tener fecha de expiración (auditor externo).
+model UsuarioRol {
+  id          String      @id @default(uuid())
+  usuarioId   String      @map("usuario_id")
+  rolCodigo   String      @map("rol_codigo")
+  tipoAlcance TipoAlcance @default(GLOBAL) @map("tipo_alcance")
+  unidadId    String?     @map("unidad_id")
+  procesoId   String?     @map("proceso_id")
+  expiraAt    DateTime?   @map("expira_at")
+  creadoAt    DateTime    @default(now()) @map("creado_at")
+
+  usuario Usuario             @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  rol     Rol                 @relation(fields: [rolCodigo], references: [codigo], onDelete: Cascade)
+  unidad  UnidadOrganizativa? @relation(fields: [unidadId], references: [id], onDelete: Cascade)
+
+  @@unique([usuarioId, rolCodigo, tipoAlcance, unidadId, procesoId])
+  @@index([usuarioId])
+  @@map("usuarios_roles")
+}
+
+/// Refresh tokens (hasheados). Se rotan en cada uso; `familia` permite
+/// detectar reutilización de un token ya rotado y revocar toda la cadena.
+model RefreshToken {
+  id            String    @id @default(uuid())
+  usuarioId     String    @map("usuario_id")
+  tokenHash     String    @unique @map("token_hash")
+  familia       String
+  expiraAt      DateTime  @map("expira_at")
+  revocadoAt    DateTime? @map("revocado_at")
+  reemplazadoPor String?  @map("reemplazado_por")
+  userAgent     String?   @map("user_agent")
+  ip            String?
+  creadoAt      DateTime  @default(now()) @map("creado_at")
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId])
+  @@index([familia])
+  @@map("refresh_tokens")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Estructura organizacional
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum TipoUnidad {
+  HOSPITAL
+  DIRECCION
+  SUBDIRECCION
+  DEPARTAMENTO
+  SERVICIO
+  AREA
+}
+
+/// Árbol de la organización: hospital/sede → direcciones → departamentos/servicios → áreas.
+/// Los procesos y subprocesos se añaden en la Fase 2.
+model UnidadOrganizativa {
+  id            String     @id @default(uuid())
+  codigo        String     @unique
+  nombre        String
+  tipo          TipoUnidad
+  padreId       String?    @map("padre_id")
+  responsableId String?    @map("responsable_id")
+  activo        Boolean    @default(true)
+  orden         Int        @default(0)
+  creadoAt      DateTime   @default(now()) @map("creado_at")
+  actualizadoAt DateTime   @updatedAt @map("actualizado_at")
+
+  padre       UnidadOrganizativa?  @relation("Jerarquia", fields: [padreId], references: [id])
+  hijos       UnidadOrganizativa[] @relation("Jerarquia")
+  responsable Usuario?             @relation("UnidadResponsable", fields: [responsableId], references: [id], onDelete: SetNull)
+  rolesAlcance UsuarioRol[]
+
+  @@index([padreId])
+  @@map("unidades_organizativas")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Bitácora
+// ─────────────────────────────────────────────────────────────────────────────
+
 /// Registro inmutable de acciones relevantes (quién, qué, cuándo, antes/después).
 /// No se actualiza ni se borra: solo se inserta.
 model Bitacora {
-  id          BigInt   @id @default(autoincrement())
-  fecha       DateTime @default(now())
-  actorId     String?  @map("actor_id")
-  actorEmail  String?  @map("actor_email")
-  accion      String // ej. "usuario.login", "usuario.crear"
-  entidad     String? // ej. "Usuario"
-  entidadId   String?  @map("entidad_id")
-  valorAnterior Json?  @map("valor_anterior")
-  valorNuevo    Json?  @map("valor_nuevo")
-  ip          String?
-  userAgent   String?  @map("user_agent")
+  id            BigInt   @id @default(autoincrement())
+  fecha         DateTime @default(now())
+  actorId       String?  @map("actor_id")
+  actorEmail    String?  @map("actor_email")
+  accion        String
+  entidad       String?
+  entidadId     String?  @map("entidad_id")
+  valorAnterior Json?    @map("valor_anterior")
+  valorNuevo    Json?    @map("valor_nuevo")
+  ip            String?
+  userAgent     String?  @map("user_agent")
 
   actor Usuario? @relation("BitacoraActor", fields: [actorId], references: [id], onDelete: SetNull)
 

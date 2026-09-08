@@ -7,7 +7,11 @@ import { PrismaModule } from './prisma/prisma.module';
 import { BitacoraModule } from './common/bitacora/bitacora.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import { AuthModule } from './auth/auth.module';
 import { HealthModule } from './health/health.module';
+import { UsuariosModule } from './usuarios/usuarios.module';
+import { RolesModule } from './roles/roles.module';
+import { OrganizacionModule } from './organizacion/organizacion.module';
 
 @Module({
   imports: [
@@ -19,7 +23,11 @@ import { HealthModule } from './health/health.module';
     }),
     PrismaModule,
     BitacoraModule,
+    AuthModule,
     HealthModule,
+    UsuariosModule,
+    RolesModule,
+    OrganizacionModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: HttpExceptionFilter },

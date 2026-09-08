@@ -1,9 +1,11 @@
 import { LockOutlined, UserOutlined } from '@ant-design/icons'
-import { Alert, Button, Card, Form, Input, Typography } from 'antd'
+import { App, Button, Card, Form, Input, Typography } from 'antd'
 import { useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { Navigate, useLocation, useNavigate } from 'react-router-dom'
+import { authApi } from '@/features/auth/authApi'
 import { useAuthStore } from '@/features/auth/authStore'
-import { semaforo } from '@/app/theme'
+import { useAuth } from '@/features/auth/useAuth'
+import { mensajeDeError } from '@/lib/api'
 
 const { Title, Text } = Typography
 
@@ -15,29 +17,29 @@ interface FormLogin {
 export function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
+  const { message } = App.useApp()
   const setSesion = useAuthStore((s) => s.setSesion)
+  const { autenticado } = useAuth()
   const [enviando, setEnviando] = useState(false)
 
   const destino =
     (location.state as { from?: { pathname: string } } | null)?.from?.pathname ?? '/'
 
-  // NOTA (Fase 0): inicio de sesión simulado para poder navegar la interfaz.
-  // En Fase 1 esto llamará a POST /api/auth/login.
-  const onFinish = (valores: FormLogin) => {
+  if (autenticado) {
+    return <Navigate to={destino} replace />
+  }
+
+  const onFinish = async (valores: FormLogin) => {
     setEnviando(true)
-    setTimeout(() => {
-      setSesion(
-        {
-          id: 'demo',
-          email: valores.email,
-          nombre: valores.email.split('@')[0] || 'Usuario',
-          permisos: [],
-          roles: ['DEMO'],
-        },
-        'token-simulado-fase0',
-      )
-      navigate(destino, { replace: true })
-    }, 300)
+    try {
+      const { usuario, accessToken } = await authApi.login(valores.email.trim(), valores.password)
+      setSesion(usuario, accessToken)
+      navigate(usuario.debeCambiarPassword ? '/perfil/cambiar-password' : destino, { replace: true })
+    } catch (err) {
+      message.error(mensajeDeError(err, 'No se pudo iniciar sesión'))
+    } finally {
+      setEnviando(false)
+    }
   }
 
   return (
@@ -46,25 +48,17 @@ export function LoginPage() {
         minHeight: '100vh',
         display: 'grid',
         placeItems: 'center',
-        background: `linear-gradient(135deg, #00629b 0%, #001f33 100%)`,
+        background: 'linear-gradient(135deg, #00629b 0%, #001f33 100%)',
         padding: 16,
       }}
     >
       <Card style={{ width: 380, boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
-        <div style={{ textAlign: 'center', marginBottom: 24 }}>
+        <div style={{ textAlign: 'center', marginBottom: 28 }}>
           <Title level={3} style={{ marginBottom: 0 }}>
             Calidad 360
           </Title>
           <Text type="secondary">Sistema de Gestión de Calidad Hospitalaria</Text>
         </div>
-
-        <Alert
-          type="info"
-          showIcon
-          style={{ marginBottom: 16, borderColor: semaforo.amarillo }}
-          message="Fase 0"
-          description="Inicio de sesión simulado. La autenticación real llega en la Fase 1."
-        />
 
         <Form<FormLogin> layout="vertical" onFinish={onFinish} requiredMark={false}>
           <Form.Item
@@ -75,7 +69,7 @@ export function LoginPage() {
               { type: 'email', message: 'Correo no válido' },
             ]}
           >
-            <Input prefix={<UserOutlined />} placeholder="usuario@hospital.org" size="large" />
+            <Input prefix={<UserOutlined />} placeholder="usuario@hospital.org" size="large" autoFocus />
           </Form.Item>
 
           <Form.Item

@@ -6,6 +6,11 @@ import helmet from 'helmet';
 import { AppModule } from './app.module';
 import type { AppConfig } from './config/configuration';
 
+// Permite serializar BigInt (p. ej. ids de bitácora) en respuestas JSON.
+(BigInt.prototype as unknown as { toJSON: () => string }).toJSON = function () {
+  return this.toString();
+};
+
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule, { bufferLogs: false });
   const config = app.get(ConfigService);
