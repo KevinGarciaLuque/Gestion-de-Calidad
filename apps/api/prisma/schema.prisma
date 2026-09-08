@@ -4,6 +4,7 @@
 // Fase 2: mapa de procesos, fichas versionadas y relaciones entre procesos.
 // Fase 3: indicadores / KPI y sus mediciones por periodo.
 // Fase 4: matriz configurable, riesgos y oportunidades por proceso, revisiones.
+// Fase 5: control documental — documentos versionados, archivos y lista maestra.
 
 generator client {
   provider = "prisma-client-js"
@@ -45,6 +46,11 @@ model Usuario {
   medicionesAnalizadas MedicionIndicador[] @relation("MedicionAnalisisPor")
   riesgosResponsable  Riesgo[]             @relation("RiesgoResponsable")
   revisionesRiesgo    RevisionRiesgo[]     @relation("RevisionRiesgoPor")
+  documentosPropietario Documento[]        @relation("DocumentoPropietario")
+  versionesDocPropuestas DocumentoVersion[] @relation("DocVersionPropuestaPor")
+  versionesDocRevisor    DocumentoVersion[] @relation("DocVersionRevisor")
+  versionesDocAprobador  DocumentoVersion[] @relation("DocVersionAprobador")
+  archivosSubidos     ArchivoDocumento[]  @relation("ArchivoSubidoPor")
 
   @@map("usuarios")
 }
@@ -169,6 +175,7 @@ model UnidadOrganizativa {
   responsable Usuario?             @relation("UnidadResponsable", fields: [responsableId], references: [id], onDelete: SetNull)
   rolesAlcance UsuarioRol[]
   procesos    Proceso[]
+  documentos  Documento[]
 
   @@index([padreId])
   @@map("unidades_organizativas")
@@ -230,6 +237,7 @@ model Proceso {
   rolesAlcance   UsuarioRol[]
   indicadores    Indicador[]
   riesgos        Riesgo[]
+  documentos     Documento[]
 
   @@index([tipo])
   @@index([areaId])
@@ -480,6 +488,103 @@ model RevisionRiesgo {
 
   @@index([riesgoId])
   @@map("revisiones_riesgo")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Control documental (Fase 5)
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum TipoDocumento {
+  POLITICA
+  MANUAL
+  PROCEDIMIENTO
+  PROTOCOLO
+  INSTRUCTIVO
+  FORMATO
+  REGISTRO
+  GUIA
+  LISTA_MAESTRA
+  EXTERNO
+}
+
+enum EstadoVersionDocumento {
+  BORRADOR
+  EN_REVISION
+  VIGENTE
+  OBSOLETA
+}
+
+/// Archivo cargado (una versión de documento apunta a uno).
+model ArchivoDocumento {
+  id            String   @id @default(uuid())
+  nombreOriginal String  @map("nombre_original")
+  rutaRelativa  String   @map("ruta_relativa")
+  mimeType      String   @map("mime_type")
+  tamanoBytes   Int      @map("tamano_bytes")
+  hashSha256    String   @map("hash_sha256")
+  subidoPorId   String?  @map("subido_por_id")
+  subidoAt      DateTime @default(now()) @map("subido_at")
+
+  subidoPor Usuario?           @relation("ArchivoSubidoPor", fields: [subidoPorId], references: [id], onDelete: SetNull)
+  versiones DocumentoVersion[]
+
+  @@map("archivos_documento")
+}
+
+model Documento {
+  id            String        @id @default(uuid())
+  codigo        String        @unique
+  nombre        String
+  tipo          TipoDocumento
+  procesoId     String?       @map("proceso_id")
+  areaId        String?       @map("area_id")
+  propietarioId String?       @map("propietario_id")
+  restringido   Boolean       @default(false)
+  palabrasClave String?       @map("palabras_clave") @db.Text
+  archivadoAt   DateTime?     @map("archivado_at")
+  creadoAt      DateTime      @default(now()) @map("creado_at")
+  actualizadoAt DateTime      @updatedAt @map("actualizado_at")
+
+  proceso     Proceso?            @relation(fields: [procesoId], references: [id], onDelete: SetNull)
+  area        UnidadOrganizativa? @relation(fields: [areaId], references: [id], onDelete: SetNull)
+  propietario Usuario?            @relation("DocumentoPropietario", fields: [propietarioId], references: [id], onDelete: SetNull)
+  versiones   DocumentoVersion[]
+
+  @@index([tipo])
+  @@index([procesoId])
+  @@map("documentos")
+}
+
+model DocumentoVersion {
+  id                String                 @id @default(uuid())
+  documentoId       String                 @map("documento_id")
+  numero            Int
+  estado            EstadoVersionDocumento  @default(BORRADOR)
+  motivoCambio      String?                @map("motivo_cambio") @db.Text
+  archivoId         String?                @map("archivo_id")
+  fechaEmision      DateTime?              @map("fecha_emision")
+  fechaVigenciaDesde DateTime?             @map("fecha_vigencia_desde")
+  proximaRevisionAt DateTime?              @map("proxima_revision_at")
+
+  propuestaPorId    String?                @map("propuesta_por_id")
+  revisorId         String?                @map("revisor_id")
+  aprobadorId       String?                @map("aprobador_id")
+  enviadaRevisionAt DateTime?              @map("enviada_revision_at")
+  aprobadaAt        DateTime?              @map("aprobada_at")
+  comentarioRevision String?               @map("comentario_revision") @db.Text
+
+  creadoAt          DateTime               @default(now()) @map("creado_at")
+  actualizadoAt     DateTime               @updatedAt @map("actualizado_at")
+
+  documento    Documento         @relation(fields: [documentoId], references: [id], onDelete: Cascade)
+  archivo      ArchivoDocumento? @relation(fields: [archivoId], references: [id], onDelete: SetNull)
+  propuestaPor Usuario?          @relation("DocVersionPropuestaPor", fields: [propuestaPorId], references: [id], onDelete: SetNull)
+  revisor      Usuario?          @relation("DocVersionRevisor", fields: [revisorId], references: [id], onDelete: SetNull)
+  aprobador    Usuario?          @relation("DocVersionAprobador", fields: [aprobadorId], references: [id], onDelete: SetNull)
+
+  @@unique([documentoId, numero])
+  @@index([documentoId, estado])
+  @@map("documentos_versiones")
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

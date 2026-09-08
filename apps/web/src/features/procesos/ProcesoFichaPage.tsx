@@ -27,6 +27,7 @@ import { IdentificacionModal } from './IdentificacionModal'
 import { InteraccionesTab } from './InteraccionesTab'
 import { ProcesoIndicadoresTab } from './ProcesoIndicadoresTab'
 import { ProcesoRiesgosTab } from '@/features/riesgos/ProcesoRiesgosTab'
+import { ProcesoDocumentosTab } from '@/features/documentos/ProcesoDocumentosTab'
 
 const { Title, Text } = Typography
 
@@ -287,6 +288,11 @@ export function ProcesoFichaPage() {
             key: 'riesgos',
             label: 'Riesgos',
             children: <ProcesoRiesgosTab procesoId={proceso.id} />,
+          },
+          {
+            key: 'documentos',
+            label: 'Documentos',
+            children: <ProcesoDocumentosTab procesoId={proceso.id} />,
           },
           {
             key: 'interacciones',

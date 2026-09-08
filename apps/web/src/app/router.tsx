@@ -11,6 +11,8 @@ import { IndicadorDetallePage } from '@/features/indicadores/IndicadorDetallePag
 import { RiesgosPage } from '@/features/riesgos/RiesgosPage'
 import { RiesgoDetallePage } from '@/features/riesgos/RiesgoDetallePage'
 import { MatrizConfigPage } from '@/features/riesgos/MatrizConfigPage'
+import { DocumentosPage } from '@/features/documentos/DocumentosPage'
+import { DocumentoDetallePage } from '@/features/documentos/DocumentoDetallePage'
 import { UsuariosPage } from '@/features/usuarios/UsuariosPage'
 import { RolesPage } from '@/features/roles/RolesPage'
 import { OrganizacionPage } from '@/features/organizacion/OrganizacionPage'
@@ -84,6 +86,22 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute permiso="riesgos.ver">
             <RiesgoDetallePage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'documentos',
+        element: (
+          <ProtectedRoute permiso="documentos.ver">
+            <DocumentosPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'documentos/:id',
+        element: (
+          <ProtectedRoute permiso="documentos.ver">
+            <DocumentoDetallePage />
           </ProtectedRoute>
         ),
       },

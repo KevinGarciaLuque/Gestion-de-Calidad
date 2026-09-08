@@ -1,3 +1,5 @@
+import { resolve } from 'node:path';
+
 /** Configuración tipada derivada de las variables de entorno. */
 export interface AppConfig {
   env: 'development' | 'production' | 'test';
@@ -13,6 +15,10 @@ export interface AppConfig {
     name: string;
     secure: boolean;
   };
+  /** Carpeta donde se guardan los archivos de documentos. */
+  archivosDir: string;
+  /** Tamaño máximo de archivo en bytes. */
+  archivoMaxBytes: number;
 }
 
 export default (): AppConfig => ({
@@ -32,4 +38,6 @@ export default (): AppConfig => ({
     name: process.env.REFRESH_COOKIE_NAME ?? 'c360_rt',
     secure: process.env.COOKIE_SECURE === 'true',
   },
+  archivosDir: resolve(process.env.ARCHIVOS_DIR ?? 'storage/documentos'),
+  archivoMaxBytes: parseInt(process.env.ARCHIVO_MAX_BYTES ?? String(25 * 1024 * 1024), 10),
 });

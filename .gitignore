@@ -17,6 +17,9 @@ out/
 # prisma
 apps/api/prisma/*.db
 
+# archivos subidos
+apps/api/storage/
+
 # logs
 *.log
 npm-debug.log*

@@ -36,7 +36,7 @@ const MODULOS: ItemModulo[] = [
   { key: '/procesos', icon: <PartitionOutlined />, label: 'Procesos', permiso: 'procesos.ver' },
   { key: '/indicadores', icon: <BarChartOutlined />, label: 'Indicadores', permiso: 'indicadores.ver' },
   { key: '/riesgos', icon: <WarningOutlined />, label: 'Riesgos', permiso: 'riesgos.ver' },
-  { key: '/documentos', icon: <FileTextOutlined />, label: 'Control documental', proximamente: true },
+  { key: '/documentos', icon: <FileTextOutlined />, label: 'Control documental', permiso: 'documentos.ver' },
   { key: '/auditorias', icon: <AuditOutlined />, label: 'Auditorías', proximamente: true },
   { key: '/hallazgos', icon: <SafetyOutlined />, label: 'Hallazgos y NC', proximamente: true },
   { key: '/acciones', icon: <ThunderboltOutlined />, label: 'Planes y acciones', proximamente: true },
@@ -62,6 +62,7 @@ const RUTAS_MENU = [
   '/procesos',
   '/indicadores',
   '/riesgos',
+  '/documentos',
   '/',
 ]
 

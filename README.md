@@ -79,7 +79,9 @@ npm run dev
 - **Fase 4** ✅ riesgos y oportunidades: matriz configurable (prob × impacto), nivel inherente
   y residual, controles y plan de tratamiento, revisiones, mapa de calor, riesgos
   transversales, y el candado de "no cerrar riesgo alto/crítico sin responsable ni plan".
-- **Fase 5** Control documental.
+- **Fase 5** ✅ control documental: documentos versionados con flujo de aprobación,
+  archivos subidos al servidor (con hash y descarga autenticada), vigencias y próxima
+  revisión, lista maestra, obsolescencia automática de la versión anterior.
 - **Fase 6** Auditorías.
 - **Fase 7** Hallazgos y no conformidades.
 - **Fase 8** Planes de mejora y acciones (CAPA).
