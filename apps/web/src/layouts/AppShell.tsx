@@ -3,6 +3,7 @@ import {
   BarChartOutlined,
   BulbOutlined,
   CalendarOutlined,
+  FilePdfOutlined,
   DashboardOutlined,
   FileTextOutlined,
   LogoutOutlined,
@@ -44,6 +45,7 @@ const MODULOS: ItemModulo[] = [
   { key: '/acciones', icon: <ThunderboltOutlined />, label: 'Planes y acciones', permiso: 'acciones.ver' },
   { key: '/mcc', icon: <BulbOutlined />, label: 'Mejora continua', permiso: 'mcc.ver' },
   { key: '/calendario', icon: <CalendarOutlined />, label: 'Calendario' },
+  { key: '/reportes', icon: <FilePdfOutlined />, label: 'Reportes', permiso: 'reportes.ver' },
   {
     key: 'admin',
     icon: <SettingOutlined />,
@@ -66,6 +68,7 @@ const RUTAS_MENU = [
   '/admin/bitacora',
   '/calendario',
   '/notificaciones',
+  '/reportes',
   '/procesos',
   '/indicadores',
   '/riesgos',

@@ -91,5 +91,8 @@ npm run dev
 - **Fase 8** ✅ planes de mejora y acciones (CAPA): acciones individuales rastreables con
   origen (hallazgo / riesgo / indicador / comité / MCC), % de avance con historial,
   evidencias y verificación de eficacia. Incluye el registro de Mejora Continua (MCC).
-- **Fase 9** Motor de automatizaciones + calendario y notificaciones.
-- **Fase 10** Dashboard gerencial + reportes → **fin del MVP**.
+- **Fase 9** ✅ motor de automatizaciones (reglas configurables, cron diario, escalamiento),
+  notificaciones in-app con campana + correo opcional, y calendario transversal del SGC.
+- **Fase 10** ✅ dashboard gerencial con radar de calidad (tarjetas de prioridad, semáforos,
+  distribuciones y alertas inteligentes) y módulo de reportes (listados con descarga CSV +
+  informe ejecutivo imprimible para la revisión por la dirección). **Fin del MVP.**

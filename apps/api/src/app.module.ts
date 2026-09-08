@@ -12,6 +12,8 @@ import { EvidenciasModule } from './evidencias/evidencias.module';
 import { NotificacionesModule } from './notificaciones/notificaciones.module';
 import { AutomatizacionesModule } from './automatizaciones/automatizaciones.module';
 import { CalendarioModule } from './calendario/calendario.module';
+import { DashboardModule } from './dashboard/dashboard.module';
+import { ReportesModule } from './reportes/reportes.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { AuthModule } from './auth/auth.module';
@@ -58,6 +60,8 @@ import { MccModule } from './mcc/mcc.module';
     MccModule,
     AutomatizacionesModule,
     CalendarioModule,
+    DashboardModule,
+    ReportesModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: HttpExceptionFilter },

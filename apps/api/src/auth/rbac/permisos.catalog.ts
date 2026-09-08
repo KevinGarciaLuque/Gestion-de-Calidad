@@ -105,6 +105,9 @@ export const PERMISOS: DefinicionPermiso[] = [
 
   // Tablero
   { codigo: 'dashboard.ver', modulo: 'dashboard', descripcion: 'Ver el panel de calidad' },
+
+  // Reportes
+  { codigo: 'reportes.ver', modulo: 'reportes', descripcion: 'Generar y descargar reportes del SGC' },
 ];
 
 /** Objeto de acceso tipado: PERMISO.USUARIOS_CREAR === 'usuarios.crear'. */
@@ -167,6 +170,7 @@ export const PERMISO = {
   RIESGOS_CONFIGURAR: 'riesgos.configurar',
   RIESGOS_ARCHIVAR: 'riesgos.archivar',
   DASHBOARD_VER: 'dashboard.ver',
+  REPORTES_VER: 'reportes.ver',
 } as const;
 
 // ── Roles ───────────────────────────────────────────────────────────────────
@@ -284,6 +288,7 @@ export const ROL_PERMISOS: Record<string, string[]> = {
     PERMISO.RIESGOS_CONFIGURAR,
     PERMISO.RIESGOS_ARCHIVAR,
     PERMISO.DASHBOARD_VER,
+    PERMISO.REPORTES_VER,
   ],
   [ROL.RESP_PROCESO]: [
     PERMISO.ORGANIZACION_VER,
@@ -307,6 +312,7 @@ export const ROL_PERMISOS: Record<string, string[]> = {
     PERMISO.RIESGOS_CREAR,
     PERMISO.RIESGOS_EDITAR,
     PERMISO.DASHBOARD_VER,
+    PERMISO.REPORTES_VER,
   ],
   [ROL.AUDITOR_INTERNO]: [
     PERMISO.ORGANIZACION_VER,
@@ -323,6 +329,7 @@ export const ROL_PERMISOS: Record<string, string[]> = {
     PERMISO.MCC_VER,
     PERMISO.RIESGOS_VER,
     PERMISO.DASHBOARD_VER,
+    PERMISO.REPORTES_VER,
   ],
   [ROL.DIRECCION]: [
     PERMISO.ORGANIZACION_VER,
@@ -336,6 +343,7 @@ export const ROL_PERMISOS: Record<string, string[]> = {
     PERMISO.MCC_VER,
     PERMISO.RIESGOS_VER,
     PERMISO.DASHBOARD_VER,
+    PERMISO.REPORTES_VER,
   ],
   [ROL.COLABORADOR]: [
     PERMISO.DOCUMENTOS_VER,
@@ -354,5 +362,6 @@ export const ROL_PERMISOS: Record<string, string[]> = {
     PERMISO.MCC_VER,
     PERMISO.RIESGOS_VER,
     PERMISO.DASHBOARD_VER,
+    PERMISO.REPORTES_VER,
   ],
 };

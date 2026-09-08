@@ -30,6 +30,8 @@ import { CambiarPasswordObligatorioPage } from '@/features/perfil/CambiarPasswor
 import { NotificacionesPage } from '@/features/notificaciones/NotificacionesPage'
 import { CalendarioPage } from '@/features/calendario/CalendarioPage'
 import { AutomatizacionesConfigPage } from '@/features/automatizaciones/AutomatizacionesConfigPage'
+import { ReportesPage } from '@/features/reportes/ReportesPage'
+import { InformeEjecutivoPage } from '@/features/reportes/InformeEjecutivoPage'
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -46,6 +48,22 @@ export const router = createBrowserRouter([
       { path: 'perfil', element: <PerfilPage /> },
       { path: 'notificaciones', element: <NotificacionesPage /> },
       { path: 'calendario', element: <CalendarioPage /> },
+      {
+        path: 'reportes',
+        element: (
+          <ProtectedRoute permiso="reportes.ver">
+            <ReportesPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'reportes/ejecutivo',
+        element: (
+          <ProtectedRoute permiso="reportes.ver">
+            <InformeEjecutivoPage />
+          </ProtectedRoute>
+        ),
+      },
       {
         path: 'procesos',
         element: (
