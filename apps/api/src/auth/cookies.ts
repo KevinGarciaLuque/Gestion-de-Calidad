@@ -22,7 +22,10 @@ function opciones(cfg: RefreshCookieCfg, maxAgeMs: number): CookieOptions {
   return {
     httpOnly: true,
     secure: cfg.secure,
-    sameSite: 'lax',
+    // En producción la SPA y la API suelen vivir en dominios distintos: la
+    // cookie del refresh viaja cross-site y necesita SameSite=None (+Secure).
+    // En local (secure=false) se mantiene Lax.
+    sameSite: cfg.secure ? 'none' : 'lax',
     path: '/api/auth',
     maxAge: maxAgeMs,
   };

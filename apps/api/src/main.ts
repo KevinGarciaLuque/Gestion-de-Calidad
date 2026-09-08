@@ -15,6 +15,10 @@ async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule, { bufferLogs: false });
   const config = app.get(ConfigService);
 
+  // Detrás del proxy de Railway/servicios gestionados: confía en X-Forwarded-*
+  // para que `secure`/`req.ip` y los rate-limits funcionen correctamente.
+  app.getHttpAdapter().getInstance().set('trust proxy', 1);
+
   app.use(helmet());
   app.use(cookieParser());
 

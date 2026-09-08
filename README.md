@@ -5,6 +5,8 @@ basado en el enfoque por procesos de **ISO 9001**.
 
 Especificación funcional completa: `Propuesta_Sistema_Gestion_Calidad_Hospitalaria_ISO9001_v1.1.docx`.
 
+Despliegue en Railway: ver [`DEPLOY.md`](DEPLOY.md).
+
 ## Stack
 
 | Capa | Tecnología |
