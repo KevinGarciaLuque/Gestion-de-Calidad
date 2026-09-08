@@ -1,0 +1,53 @@
+// Calidad 360 Hospitalaria — esquema de datos
+// Fase 0: identidad mínima + bitácora (auditoría append-only).
+// Las fases siguientes amplían este esquema (roles, alcance, procesos, etc.).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+/// Usuarios del sistema. En Fase 1 se les asigna rol + alcance.
+model Usuario {
+  id             String    @id @default(uuid())
+  email          String    @unique
+  nombre         String
+  passwordHash   String    @map("password_hash")
+  activo         Boolean   @default(true)
+  ultimoAccesoAt DateTime? @map("ultimo_acceso_at")
+  intentosFallidos Int     @default(0) @map("intentos_fallidos")
+  bloqueadoHasta DateTime? @map("bloqueado_hasta")
+  creadoAt       DateTime  @default(now()) @map("creado_at")
+  actualizadoAt  DateTime  @updatedAt @map("actualizado_at")
+
+  eventos Bitacora[] @relation("BitacoraActor")
+
+  @@map("usuarios")
+}
+
+/// Registro inmutable de acciones relevantes (quién, qué, cuándo, antes/después).
+/// No se actualiza ni se borra: solo se inserta.
+model Bitacora {
+  id          BigInt   @id @default(autoincrement())
+  fecha       DateTime @default(now())
+  actorId     String?  @map("actor_id")
+  actorEmail  String?  @map("actor_email")
+  accion      String // ej. "usuario.login", "usuario.crear"
+  entidad     String? // ej. "Usuario"
+  entidadId   String?  @map("entidad_id")
+  valorAnterior Json?  @map("valor_anterior")
+  valorNuevo    Json?  @map("valor_nuevo")
+  ip          String?
+  userAgent   String?  @map("user_agent")
+
+  actor Usuario? @relation("BitacoraActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([fecha])
+  @@index([actorId])
+  @@index([entidad, entidadId])
+  @@map("bitacora")
+}

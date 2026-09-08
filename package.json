@@ -1,0 +1,22 @@
+{
+  "name": "calidad360",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Calidad 360 Hospitalaria — Sistema de Gestión de Calidad (SGC) ISO 9001",
+  "scripts": {
+    "postinstall": "npm --prefix apps/api install && npm --prefix apps/web install",
+    "dev": "concurrently -n api,web -c blue,green \"npm run dev:api\" \"npm run dev:web\"",
+    "dev:api": "npm --prefix apps/api run start:dev",
+    "dev:web": "npm --prefix apps/web run dev",
+    "build": "npm --prefix apps/api run build && npm --prefix apps/web run build",
+    "db:migrate": "npm --prefix apps/api run db:migrate",
+    "db:studio": "npm --prefix apps/api run db:studio",
+    "db:seed": "npm --prefix apps/api run db:seed"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
