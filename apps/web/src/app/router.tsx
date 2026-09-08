@@ -6,6 +6,8 @@ import { LoginPage } from '@/pages/LoginPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 import { MapaProcesosPage } from '@/features/procesos/MapaProcesosPage'
 import { ProcesoFichaPage } from '@/features/procesos/ProcesoFichaPage'
+import { IndicadoresPage } from '@/features/indicadores/IndicadoresPage'
+import { IndicadorDetallePage } from '@/features/indicadores/IndicadorDetallePage'
 import { UsuariosPage } from '@/features/usuarios/UsuariosPage'
 import { RolesPage } from '@/features/roles/RolesPage'
 import { OrganizacionPage } from '@/features/organizacion/OrganizacionPage'
@@ -39,6 +41,22 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute permiso="procesos.ver">
             <ProcesoFichaPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'indicadores',
+        element: (
+          <ProtectedRoute permiso="indicadores.ver">
+            <IndicadoresPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'indicadores/:id',
+        element: (
+          <ProtectedRoute permiso="indicadores.ver">
+            <IndicadorDetallePage />
           </ProtectedRoute>
         ),
       },

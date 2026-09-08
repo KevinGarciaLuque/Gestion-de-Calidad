@@ -34,7 +34,7 @@ interface ItemModulo {
 const MODULOS: ItemModulo[] = [
   { key: '/', icon: <DashboardOutlined />, label: 'Panel', permiso: 'dashboard.ver' },
   { key: '/procesos', icon: <PartitionOutlined />, label: 'Procesos', permiso: 'procesos.ver' },
-  { key: '/indicadores', icon: <BarChartOutlined />, label: 'Indicadores', proximamente: true },
+  { key: '/indicadores', icon: <BarChartOutlined />, label: 'Indicadores', permiso: 'indicadores.ver' },
   { key: '/riesgos', icon: <WarningOutlined />, label: 'Riesgos', proximamente: true },
   { key: '/documentos', icon: <FileTextOutlined />, label: 'Control documental', proximamente: true },
   { key: '/auditorias', icon: <AuditOutlined />, label: 'Auditorías', proximamente: true },
@@ -60,6 +60,7 @@ const RUTAS_MENU = [
   '/admin/organizacion',
   '/admin/bitacora',
   '/procesos',
+  '/indicadores',
   '/',
 ]
 

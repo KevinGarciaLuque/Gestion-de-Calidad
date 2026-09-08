@@ -25,6 +25,7 @@ import { FichaEditor } from './FichaEditor'
 import { FichaVista } from './FichaVista'
 import { IdentificacionModal } from './IdentificacionModal'
 import { InteraccionesTab } from './InteraccionesTab'
+import { ProcesoIndicadoresTab } from './ProcesoIndicadoresTab'
 
 const { Title, Text } = Typography
 
@@ -275,6 +276,11 @@ export function ProcesoFichaPage() {
                 )}
               </>
             ),
+          },
+          {
+            key: 'indicadores',
+            label: 'Indicadores',
+            children: <ProcesoIndicadoresTab procesoId={proceso.id} />,
           },
           {
             key: 'interacciones',

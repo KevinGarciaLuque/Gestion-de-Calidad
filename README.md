@@ -73,7 +73,9 @@ npm run dev
   estructura organizacional, bitácora, cambio de contraseña obligatorio.
 - **Fase 2** ✅ mapa de procesos, ficha de caracterización versionada, flujo de aprobación
   (borrador → revisión → aprobada), relaciones proveedor/cliente, alcance de permisos por proceso.
-- **Fase 3** Indicadores / KPI.
+- **Fase 3** ✅ indicadores / KPI: definición, cálculo automático (numerador/denominador),
+  semáforo por meta y umbral, captura por periodo, tendencia entre periodos, alertas de
+  captura pendiente / fuera de meta / reincidencia, análisis y consolidado anual.
 - **Fase 4** Riesgos y oportunidades.
 - **Fase 5** Control documental.
 - **Fase 6** Auditorías.

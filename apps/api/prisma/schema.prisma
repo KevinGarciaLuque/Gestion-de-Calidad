@@ -2,6 +2,7 @@
 // Fase 0: identidad mínima + bitácora (auditoría append-only).
 // Fase 1: roles, permisos, alcance, estructura organizacional y refresh tokens.
 // Fase 2: mapa de procesos, fichas versionadas y relaciones entre procesos.
+// Fase 3: indicadores / KPI y sus mediciones por periodo.
 
 generator client {
   provider = "prisma-client-js"
@@ -37,6 +38,10 @@ model Usuario {
   procesosResponsable Proceso[]            @relation("ProcesoResponsable")
   procesosSuplente    Proceso[]            @relation("ProcesoSuplente")
   versionesProceso    ProcesoVersion[]     @relation("ProcesoVersionAutoria")
+  indicadoresCaptura  Indicador[]          @relation("IndicadorResponsableCaptura")
+  indicadoresAnalisis Indicador[]          @relation("IndicadorResponsableAnalisis")
+  medicionesCapturadas MedicionIndicador[] @relation("MedicionCapturaPor")
+  medicionesAnalizadas MedicionIndicador[] @relation("MedicionAnalisisPor")
 
   @@map("usuarios")
 }
@@ -220,6 +225,7 @@ model Proceso {
   relaciones     ProcesoRelacion[] @relation("ProcesoOrigen")
   relacionadoPor ProcesoRelacion[] @relation("ProcesoDestino")
   rolesAlcance   UsuarioRol[]
+  indicadores    Indicador[]
 
   @@index([tipo])
   @@index([areaId])
@@ -275,6 +281,90 @@ model ProcesoRelacion {
   @@unique([origenId, destinoId, tipo])
   @@index([destinoId])
   @@map("procesos_relaciones")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Indicadores / KPI (Fase 3)
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum FrecuenciaIndicador {
+  MENSUAL
+  BIMESTRAL
+  TRIMESTRAL
+  SEMESTRAL
+  ANUAL
+}
+
+/// Sentido de mejora: CRECIENTE = un valor más alto es mejor.
+enum SentidoIndicador {
+  CRECIENTE
+  DECRECIENTE
+}
+
+enum SemaforoMedicion {
+  VERDE
+  AMARILLO
+  ROJO
+}
+
+model Indicador {
+  id                    String              @id @default(uuid())
+  codigo                String              @unique
+  nombre                String
+  objetivo              String              @db.Text
+  procesoId             String              @map("proceso_id")
+  formula               String              @db.Text
+  usaNumeradorDenominador Boolean           @default(true) @map("usa_num_den")
+  expresarPorcentaje    Boolean             @default(true) @map("expresar_porcentaje")
+  unidad                String
+  fuenteDatos           String?             @map("fuente_datos") @db.Text
+  frecuencia            FrecuenciaIndicador
+  sentido               SentidoIndicador    @default(CRECIENTE)
+  meta                  Float
+  umbralAmarillo        Float?              @map("umbral_amarillo")
+  responsableCapturaId  String?             @map("responsable_captura_id")
+  responsableAnalisisId String?             @map("responsable_analisis_id")
+  activo                Boolean             @default(true)
+  archivadoAt           DateTime?           @map("archivado_at")
+  creadoAt              DateTime            @default(now()) @map("creado_at")
+  actualizadoAt         DateTime            @updatedAt @map("actualizado_at")
+
+  proceso              Proceso  @relation(fields: [procesoId], references: [id], onDelete: Cascade)
+  responsableCaptura   Usuario? @relation("IndicadorResponsableCaptura", fields: [responsableCapturaId], references: [id], onDelete: SetNull)
+  responsableAnalisis  Usuario? @relation("IndicadorResponsableAnalisis", fields: [responsableAnalisisId], references: [id], onDelete: SetNull)
+  mediciones           MedicionIndicador[]
+
+  @@index([procesoId])
+  @@map("indicadores")
+}
+
+/// Resultado del indicador para un periodo concreto.
+model MedicionIndicador {
+  id           String           @id @default(uuid())
+  indicadorId  String           @map("indicador_id")
+  anio         Int
+  periodo      Int // 1..12 (mensual), 1..4 (trimestral), etc.
+  etiqueta     String
+  numerador    Float?
+  denominador  Float?
+  valor        Float
+  semaforo     SemaforoMedicion
+  analisis     String?          @db.Text
+  planAccion   String?          @map("plan_accion") @db.Text
+  evidenciaUrl String?          @map("evidencia_url")
+  capturadoPorId String?        @map("capturado_por_id")
+  capturadoAt   DateTime        @default(now()) @map("capturado_at")
+  analizadoPorId String?        @map("analizado_por_id")
+  analizadoAt   DateTime?       @map("analizado_at")
+  actualizadoAt DateTime        @updatedAt @map("actualizado_at")
+
+  indicador    Indicador @relation(fields: [indicadorId], references: [id], onDelete: Cascade)
+  capturadoPor Usuario?  @relation("MedicionCapturaPor", fields: [capturadoPorId], references: [id], onDelete: SetNull)
+  analizadoPor Usuario?  @relation("MedicionAnalisisPor", fields: [analizadoPorId], references: [id], onDelete: SetNull)
+
+  @@unique([indicadorId, anio, periodo])
+  @@index([indicadorId])
+  @@map("mediciones_indicador")
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

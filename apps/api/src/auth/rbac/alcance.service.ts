@@ -49,6 +49,21 @@ export class AlcanceService {
     return { OR: or };
   }
 
+  /**
+   * IDs de los procesos que el usuario puede alcanzar con `permiso`.
+   * `null` = todos (global / super admin). Útil para filtrar entidades hijas
+   * de un proceso (indicadores, riesgos, documentos…).
+   */
+  async procesosVisiblesIds(usuario: UsuarioActual, permiso: string): Promise<string[] | null> {
+    const filtro = await this.filtroProcesos(usuario, permiso);
+    if (!filtro) return null;
+    const filas = await this.prisma.proceso.findMany({
+      where: filtro as never,
+      select: { id: true },
+    });
+    return filas.map((f) => f.id);
+  }
+
   /** ¿El usuario tiene `permiso` sobre este proceso concreto? */
   async puedeSobreProceso(
     usuario: UsuarioActual,

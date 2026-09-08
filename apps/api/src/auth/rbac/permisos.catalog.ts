@@ -52,6 +52,14 @@ export const PERMISOS: DefinicionPermiso[] = [
   { codigo: 'procesos.aprobar', modulo: 'procesos', descripcion: 'Aprobar y publicar versiones de procesos' },
   { codigo: 'procesos.archivar', modulo: 'procesos', descripcion: 'Archivar procesos' },
 
+  // Indicadores
+  { codigo: 'indicadores.ver', modulo: 'indicadores', descripcion: 'Ver indicadores y sus resultados' },
+  { codigo: 'indicadores.crear', modulo: 'indicadores', descripcion: 'Crear indicadores' },
+  { codigo: 'indicadores.editar', modulo: 'indicadores', descripcion: 'Editar la definición de indicadores' },
+  { codigo: 'indicadores.capturar', modulo: 'indicadores', descripcion: 'Registrar mediciones por periodo' },
+  { codigo: 'indicadores.analizar', modulo: 'indicadores', descripcion: 'Registrar análisis de resultados fuera de meta' },
+  { codigo: 'indicadores.archivar', modulo: 'indicadores', descripcion: 'Archivar indicadores' },
+
   // Tablero
   { codigo: 'dashboard.ver', modulo: 'dashboard', descripcion: 'Ver el panel de calidad' },
 ];
@@ -80,6 +88,12 @@ export const PERMISO = {
   PROCESOS_REVISAR: 'procesos.revisar',
   PROCESOS_APROBAR: 'procesos.aprobar',
   PROCESOS_ARCHIVAR: 'procesos.archivar',
+  INDICADORES_VER: 'indicadores.ver',
+  INDICADORES_CREAR: 'indicadores.crear',
+  INDICADORES_EDITAR: 'indicadores.editar',
+  INDICADORES_CAPTURAR: 'indicadores.capturar',
+  INDICADORES_ANALIZAR: 'indicadores.analizar',
+  INDICADORES_ARCHIVAR: 'indicadores.archivar',
   DASHBOARD_VER: 'dashboard.ver',
 } as const;
 
@@ -162,26 +176,37 @@ export const ROL_PERMISOS: Record<string, string[]> = {
     PERMISO.PROCESOS_REVISAR,
     PERMISO.PROCESOS_APROBAR,
     PERMISO.PROCESOS_ARCHIVAR,
+    PERMISO.INDICADORES_VER,
+    PERMISO.INDICADORES_CREAR,
+    PERMISO.INDICADORES_EDITAR,
+    PERMISO.INDICADORES_CAPTURAR,
+    PERMISO.INDICADORES_ANALIZAR,
+    PERMISO.INDICADORES_ARCHIVAR,
     PERMISO.DASHBOARD_VER,
   ],
   [ROL.RESP_PROCESO]: [
     PERMISO.ORGANIZACION_VER,
     PERMISO.PROCESOS_VER,
     PERMISO.PROCESOS_EDITAR,
+    PERMISO.INDICADORES_VER,
+    PERMISO.INDICADORES_CAPTURAR,
+    PERMISO.INDICADORES_ANALIZAR,
     PERMISO.DASHBOARD_VER,
   ],
   [ROL.AUDITOR_INTERNO]: [
     PERMISO.ORGANIZACION_VER,
     PERMISO.BITACORA_VER,
     PERMISO.PROCESOS_VER,
+    PERMISO.INDICADORES_VER,
     PERMISO.DASHBOARD_VER,
   ],
   [ROL.DIRECCION]: [
     PERMISO.ORGANIZACION_VER,
     PERMISO.BITACORA_VER,
     PERMISO.PROCESOS_VER,
+    PERMISO.INDICADORES_VER,
     PERMISO.DASHBOARD_VER,
   ],
   [ROL.COLABORADOR]: [PERMISO.DASHBOARD_VER],
-  [ROL.CONSULTA_EXTERNO]: [PERMISO.PROCESOS_VER, PERMISO.DASHBOARD_VER],
+  [ROL.CONSULTA_EXTERNO]: [PERMISO.PROCESOS_VER, PERMISO.INDICADORES_VER, PERMISO.DASHBOARD_VER],
 };
