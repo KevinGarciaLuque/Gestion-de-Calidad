@@ -32,10 +32,10 @@ export function construirDefinicion(version: Pick<VersionFicha, 'actividades' | 
     .slice(0, 5)
 
   const iniTexto = entradas.length
-    ? `<b>Entradas</b><br/>${entradas.map((x) => `• ${x}`).join('<br/>')}`
+    ? `Entradas:<br/>${entradas.map((x) => `- ${x}`).join('<br/>')}`
     : 'Inicio'
   const finTexto = salidas.length
-    ? `<b>Salidas</b><br/>${salidas.map((x) => `• ${x}`).join('<br/>')}`
+    ? `Salidas:<br/>${salidas.map((x) => `- ${x}`).join('<br/>')}`
     : 'Fin'
 
   L.push(`  ini(["${iniTexto}"])`)
@@ -44,7 +44,7 @@ export function construirDefinicion(version: Pick<VersionFicha, 'actividades' | 
   acts.forEach((a, i) => {
     const num = a.orden ?? i + 1
     const resp = limpiar(a.responsable, 40)
-    const label = `<b>${num}.</b> ${limpiar(a.actividad, 110)}${resp ? `<br/><i>${resp}</i>` : ''}`
+    const label = `${num}. ${limpiar(a.actividad, 120)}${resp ? `<br/>(${resp})` : ''}`
     L.push(`  n${i}["${label}"]`)
   })
 
@@ -78,7 +78,15 @@ async function cargarMermaid() {
       securityLevel: 'loose',
       theme: 'neutral',
       fontFamily: "'Segoe UI', system-ui, sans-serif",
-      flowchart: { htmlLabels: true, curve: 'linear', nodeSpacing: 40, rankSpacing: 50, padding: 8 },
+      flowchart: {
+        htmlLabels: false, // texto SVG: mide y ajusta bien (evita recortes)
+        curve: 'linear',
+        nodeSpacing: 45,
+        rankSpacing: 55,
+        padding: 12,
+        wrappingWidth: 240,
+        useMaxWidth: true,
+      },
     })
     mermaidListo = true
   }
