@@ -283,6 +283,8 @@ model ProcesoVersion {
   salidas     Json    @default("[]") // [{ salida, registro, cliente }]
   recursos    Json    @default("[]") // [{ tipo, detalle }]
   notas       String? @db.Text
+  /// Definición Mermaid del flujograma (si es null se genera desde las actividades).
+  flujograma  String? @db.Text
 
   // Trazabilidad del flujo de aprobación
   propuestaPorId String?   @map("propuesta_por_id")

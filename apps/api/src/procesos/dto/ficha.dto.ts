@@ -71,4 +71,10 @@ export class GuardarFichaDto {
   @IsString()
   @MaxLength(2000)
   notas?: string;
+
+  /** Definición Mermaid del flujograma. Vacío/nulo = se genera desde las actividades. */
+  @IsOptional()
+  @IsString()
+  @MaxLength(20000)
+  flujograma?: string | null;
 }

@@ -47,6 +47,7 @@ function aFichaPayload(v: VersionFicha): FichaPayload {
     salidas: v.salidas ?? [],
     recursos: v.recursos ?? [],
     notas: v.notas ?? undefined,
+    flujograma: v.flujograma ?? '',
   }
 }
 

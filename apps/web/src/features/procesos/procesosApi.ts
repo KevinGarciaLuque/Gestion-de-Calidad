@@ -76,6 +76,7 @@ export interface VersionFicha {
   salidas: SalidaFicha[]
   recursos: RecursoFicha[]
   notas: string | null
+  flujograma: string | null
   enviadaRevisionAt: string | null
   aprobadaAt: string | null
   comentarioRevision: string | null
@@ -125,6 +126,7 @@ export interface FichaPayload {
   salidas: SalidaFicha[]
   recursos: RecursoFicha[]
   notas?: string
+  flujograma?: string | null
 }
 
 export interface MapaConfig {

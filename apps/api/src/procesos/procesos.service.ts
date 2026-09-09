@@ -351,6 +351,7 @@ export class ProcesosService {
       salidas: dto.salidas as unknown as Prisma.InputJsonValue,
       recursos: dto.recursos as unknown as Prisma.InputJsonValue,
       notas: dto.notas ?? null,
+      flujograma: dto.flujograma?.trim() ? dto.flujograma : null,
     };
 
     if (trabajo?.estado === 'EN_REVISION') {

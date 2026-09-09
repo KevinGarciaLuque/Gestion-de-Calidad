@@ -13,7 +13,7 @@ function limpiar(s: string | number | undefined | null, max = 90): string {
 }
 
 /** Construye la definición Mermaid del flujograma a partir de la ficha. */
-function construirDefinicion(version: VersionFicha): string {
+export function construirDefinicion(version: Pick<VersionFicha, 'actividades' | 'entradas' | 'salidas'>): string {
   const acts = [...(version.actividades ?? [])]
     .filter((a) => (a.actividad ?? '').trim())
     .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
@@ -85,8 +85,43 @@ async function cargarMermaid() {
   return mermaid
 }
 
+/** Renderiza una definición Mermaid a SVG. Reutilizable (vista y editor). */
+export function MermaidVista({ definicion, id }: { definicion: string; id: string }) {
+  const [svg, setSvg] = useState('')
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (!definicion.trim()) {
+      setSvg('')
+      setError('')
+      return
+    }
+    let cancel = false
+    cargarMermaid()
+      .then((m) => m.render(`mmd-${id}-${Date.now()}`, definicion))
+      .then(({ svg }) => !cancel && (setSvg(svg), setError('')))
+      .catch((e: unknown) => !cancel && setError(e instanceof Error ? e.message : 'Error de sintaxis'))
+    return () => {
+      cancel = true
+    }
+  }, [definicion, id])
+
+  if (error) return <Alert type="warning" showIcon message="El diagrama tiene un error de sintaxis" description={error} />
+  if (!svg) return <div style={{ color: '#bfbfbf', padding: 24, textAlign: 'center' }}>Sin diagrama</div>
+  return (
+    <div
+      style={{ overflowX: 'auto', textAlign: 'center' }}
+      dangerouslySetInnerHTML={{ __html: svg }}
+    />
+  )
+}
+
 export function Flujograma({ version }: { version: VersionFicha }) {
-  const definicion = useMemo(() => construirDefinicion(version), [version])
+  const definicion = useMemo(
+    () => (version.flujograma?.trim() ? version.flujograma : construirDefinicion(version)),
+    [version],
+  )
+  const esManual = !!version.flujograma?.trim()
   const [svg, setSvg] = useState<string>('')
   const [error, setError] = useState<string>('')
   const [cargando, setCargando] = useState(false)
@@ -153,7 +188,9 @@ export function Flujograma({ version }: { version: VersionFicha }) {
     <>
       <Flex justify="space-between" align="center" wrap gap={8} style={{ marginBottom: 12 }}>
         <span style={{ color: 'rgba(0,0,0,0.45)', fontSize: 13 }}>
-          Generado automáticamente desde las actividades de la ficha (versión {version.numero}).
+          {esManual
+            ? `Flujograma editado a mano (versión ${version.numero}). Se edita desde la ficha.`
+            : `Generado automáticamente desde las actividades de la ficha (versión ${version.numero}).`}
         </span>
         <Flex gap={8}>
           <Button size="small" icon={<DownloadOutlined />} onClick={descargarSvg} disabled={!svg}>

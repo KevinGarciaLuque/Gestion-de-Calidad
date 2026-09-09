@@ -1,7 +1,11 @@
-import { Button, Card, Form, Input, InputNumber, Select, Space } from 'antd'
-import { DeleteOutlined, PlusOutlined } from '@ant-design/icons'
+import { useEffect, useState } from 'react'
+import { Button, Card, Form, Input, InputNumber, Select, Space, Typography } from 'antd'
+import { DeleteOutlined, PlusOutlined, ThunderboltOutlined } from '@ant-design/icons'
 import type { FormListFieldData } from 'antd/es/form/FormList'
 import { ETIQUETA_TIPO_RECURSO, type FichaPayload, type TipoRecurso } from './procesosApi'
+import { MermaidVista, construirDefinicion } from './Flujograma'
+
+const { Text } = Typography
 
 interface Props {
   inicial: FichaPayload
@@ -34,6 +38,22 @@ const columnasTexto = (campos: FormListFieldData[], remove: (i: number) => void,
 
 export function FichaEditor({ inicial, guardando, onGuardar, onCancelar }: Props) {
   const [form] = Form.useForm<FichaPayload>()
+  const flujograma = Form.useWatch('flujograma', form) ?? ''
+  const [previewDef, setPreviewDef] = useState(flujograma)
+  useEffect(() => {
+    const t = setTimeout(() => setPreviewDef(flujograma), 500)
+    return () => clearTimeout(t)
+  }, [flujograma])
+
+  const generarDesdeActividades = () => {
+    const v = form.getFieldsValue()
+    const def = construirDefinicion({
+      actividades: (v.actividades ?? []).map((a, i) => ({ ...a, orden: a.orden ?? i + 1 })),
+      entradas: v.entradas ?? [],
+      salidas: v.salidas ?? [],
+    })
+    form.setFieldValue('flujograma', def || 'flowchart TD\n  a[Inicio] --> b[Fin]')
+  }
 
   return (
     <Form<FichaPayload>
@@ -168,6 +188,42 @@ export function FichaEditor({ inicial, guardando, onGuardar, onCancelar }: Props
             </>
           )}
         </Form.List>
+      </Card>
+
+      <Card
+        size="small"
+        title="Flujograma (opcional)"
+        style={{ marginBottom: 12 }}
+        extra={
+          <Space>
+            <Button size="small" icon={<ThunderboltOutlined />} onClick={generarDesdeActividades}>
+              Generar desde actividades
+            </Button>
+            {flujograma && (
+              <Button size="small" danger onClick={() => form.setFieldValue('flujograma', '')}>
+                Borrar (volver a automático)
+              </Button>
+            )}
+          </Space>
+        }
+      >
+        <Text type="secondary" style={{ fontSize: 12.5, display: 'block', marginBottom: 8 }}>
+          Si lo dejas vacío, el flujograma se genera solo desde las actividades. Si quieres
+          decisiones, ramas o bucles de reproceso, pulsa <b>Generar desde actividades</b> y edita
+          el texto (sintaxis <a href="https://mermaid.js.org/syntax/flowchart.html" target="_blank" rel="noreferrer">Mermaid</a>).
+        </Text>
+        <Form.Item name="flujograma" style={{ marginBottom: 8 }}>
+          <Input.TextArea
+            rows={8}
+            style={{ fontFamily: 'Consolas, monospace', fontSize: 12.5 }}
+            placeholder={'flowchart TD\n  a["1. Revisar solicitud"] --> d{¿Cumple requisitos?}\n  d -->|Sí| b["2. Aprobar"]\n  d -->|No| a'}
+          />
+        </Form.Item>
+        {previewDef.trim() && (
+          <div style={{ border: '1px solid #f0f0f0', borderRadius: 6, padding: 12, background: '#fff' }}>
+            <MermaidVista definicion={previewDef} id="editor-preview" />
+          </div>
+        )}
       </Card>
 
       <Form.Item name="notas" label="Notas (opcional)">
