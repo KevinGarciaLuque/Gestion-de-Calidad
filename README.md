@@ -3,9 +3,9 @@
 Sistema de Gestión de Calidad (SGC) para el Departamento de Gestión de Calidad de un hospital,
 basado en el enfoque por procesos de **ISO 9001**.
 
-Especificación funcional completa: `Propuesta_Sistema_Gestion_Calidad_Hospitalaria_ISO9001_v1.1.docx`.
-
-Despliegue en Railway: ver [`DEPLOY.md`](DEPLOY.md).
+- Especificación funcional (propuesta): `Propuesta_Sistema_Gestion_Calidad_Hospitalaria_ISO9001_v1.1.docx`.
+- **Manual de usuario**: [`MANUAL_USUARIO.md`](MANUAL_USUARIO.md) (fuente) · `Manual_de_Usuario_Calidad360.docx` (Word).
+- Despliegue en Railway: ver [`DEPLOY.md`](DEPLOY.md).
 
 ## Stack
 
