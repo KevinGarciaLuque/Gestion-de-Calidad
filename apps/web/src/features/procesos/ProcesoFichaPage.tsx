@@ -306,6 +306,7 @@ export function ProcesoFichaPage() {
               <Table
                 size="small"
                 rowKey="id"
+                scroll={{ x: 'max-content' }}
                 pagination={false}
                 dataSource={historial}
                 columns={[

@@ -38,6 +38,7 @@ export function FichaVista({ version }: { version: VersionFicha }) {
       <Seccion titulo="Entradas">
         <Table
           size="small"
+          scroll={{ x: 'max-content' }}
           pagination={false}
           rowKey={(_, i) => String(i)}
           dataSource={version.entradas}
@@ -53,6 +54,7 @@ export function FichaVista({ version }: { version: VersionFicha }) {
       <Seccion titulo="Actividades">
         <Table
           size="small"
+          scroll={{ x: 'max-content' }}
           pagination={false}
           rowKey={(_, i) => String(i)}
           dataSource={[...version.actividades].sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))}
@@ -69,6 +71,7 @@ export function FichaVista({ version }: { version: VersionFicha }) {
       <Seccion titulo="Salidas">
         <Table
           size="small"
+          scroll={{ x: 'max-content' }}
           pagination={false}
           rowKey={(_, i) => String(i)}
           dataSource={version.salidas}
@@ -84,6 +87,7 @@ export function FichaVista({ version }: { version: VersionFicha }) {
       <Seccion titulo="Recursos">
         <Table
           size="small"
+          scroll={{ x: 'max-content' }}
           pagination={false}
           rowKey={(_, i) => String(i)}
           dataSource={version.recursos}

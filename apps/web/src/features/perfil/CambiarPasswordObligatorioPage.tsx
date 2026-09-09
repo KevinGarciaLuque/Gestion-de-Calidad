@@ -43,7 +43,7 @@ export function CambiarPasswordObligatorioPage() {
         padding: 16,
       }}
     >
-      <Card style={{ width: 420 }}>
+      <Card style={{ width: 'min(420px, 100%)' }}>
         <Title level={4}>Cambia tu contraseña</Title>
         <Paragraph type="secondary">
           Tu cuenta tiene una contraseña temporal. Define una nueva para continuar.

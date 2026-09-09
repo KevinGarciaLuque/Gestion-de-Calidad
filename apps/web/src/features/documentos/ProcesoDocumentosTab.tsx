@@ -33,6 +33,7 @@ export function ProcesoDocumentosTab({ procesoId }: { procesoId: string }) {
       <Table<DocumentoFila>
         rowKey="id"
         size="small"
+        scroll={{ x: 'max-content' }}
         loading={isFetching}
         dataSource={data?.datos}
         locale={{ emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Sin documentos" /> }}

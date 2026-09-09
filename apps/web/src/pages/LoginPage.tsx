@@ -52,7 +52,7 @@ export function LoginPage() {
         padding: 16,
       }}
     >
-      <Card style={{ width: 380, boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
+      <Card style={{ width: 'min(380px, 100%)', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
           <Title level={3} style={{ marginBottom: 0 }}>
             Calidad 360

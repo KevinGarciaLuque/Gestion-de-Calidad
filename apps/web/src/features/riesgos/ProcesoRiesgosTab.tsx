@@ -33,6 +33,7 @@ export function ProcesoRiesgosTab({ procesoId }: { procesoId: string }) {
       <Table<RiesgoFila>
         rowKey="id"
         size="small"
+        scroll={{ x: 'max-content' }}
         loading={isFetching}
         dataSource={data?.datos}
         locale={{ emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Sin riesgos" /> }}

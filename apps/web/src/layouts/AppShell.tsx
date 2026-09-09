@@ -7,6 +7,7 @@ import {
   DashboardOutlined,
   FileTextOutlined,
   LogoutOutlined,
+  MenuOutlined,
   PartitionOutlined,
   SafetyOutlined,
   SettingOutlined,
@@ -14,9 +15,9 @@ import {
   UserOutlined,
   WarningOutlined,
 } from '@ant-design/icons'
-import { Avatar, Dropdown, Layout, Menu, Typography } from 'antd'
+import { Avatar, Button, Drawer, Dropdown, Grid, Layout, Menu, Typography } from 'antd'
 import type { MenuProps } from 'antd'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/features/auth/useAuth'
 import { useAuthStore } from '@/features/auth/authStore'
@@ -85,16 +86,46 @@ function claveSeleccionada(pathname: string): string {
   return RUTAS_MENU.find((r) => r !== '/' && pathname.startsWith(r)) ?? pathname
 }
 
+function Marca({ colapsado }: { colapsado: boolean }) {
+  return (
+    <div
+      style={{
+        height: 56,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: colapsado ? 'center' : 'flex-start',
+        gap: 8,
+        padding: colapsado ? 0 : '0 20px',
+        color: '#fff',
+        fontWeight: 700,
+      }}
+    >
+      <SafetyOutlined style={{ fontSize: 20 }} />
+      {!colapsado && <span>Calidad 360</span>}
+    </div>
+  )
+}
+
 export function AppShell() {
   const [colapsado, setColapsado] = useState(false)
+  const [drawerAbierto, setDrawerAbierto] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
   const { usuario, puede } = useAuth()
   const cerrarSesion = useAuthStore((s) => s.cerrarSesion)
 
+  const screens = Grid.useBreakpoint()
+  // `lg` marca el salto a escritorio. Mientras Grid no ha medido (SSR/primer
+  // render) `lg` es undefined: asumimos escritorio para no parpadear.
+  const esMovil = screens.lg === false
+
+  // Cierra el menú lateral móvil al navegar.
+  useEffect(() => {
+    setDrawerAbierto(false)
+  }, [location.pathname])
+
   const items = useMemo<MenuProps['items']>(() => {
-    const visible = (m: ItemModulo): boolean =>
-      !!m.proximamente || !m.permiso || puede(m.permiso)
+    const visible = (m: ItemModulo): boolean => !!m.proximamente || !m.permiso || puede(m.permiso)
 
     const resultado: MenuProps['items'] = []
     for (const m of MODULOS) {
@@ -120,41 +151,48 @@ export function AppShell() {
     { key: 'salir', icon: <LogoutOutlined />, label: 'Cerrar sesión', danger: true },
   ]
 
+  const menuNavegacion = (
+    <Menu
+      theme="dark"
+      mode="inline"
+      selectedKeys={[claveSeleccionada(location.pathname)]}
+      defaultOpenKeys={['admin']}
+      items={items}
+      style={{ borderInlineEnd: 0 }}
+      onClick={({ key }) => {
+        if (key.startsWith('/')) navigate(key)
+      }}
+    />
+  )
+
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      <Sider
-        collapsible
-        collapsed={colapsado}
-        onCollapse={setColapsado}
-        breakpoint="lg"
-        collapsedWidth={64}
-        theme="dark"
-      >
-        <div
-          style={{
-            height: 56,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#fff',
-            fontWeight: 700,
-            gap: 8,
-          }}
+      {esMovil ? (
+        <Drawer
+          placement="left"
+          width={260}
+          open={drawerAbierto}
+          onClose={() => setDrawerAbierto(false)}
+          closable={false}
+          styles={{ body: { padding: 0, background: '#001f33' }, header: { display: 'none' } }}
         >
-          <SafetyOutlined style={{ fontSize: 20 }} />
-          {!colapsado && <span>Calidad 360</span>}
-        </div>
-        <Menu
+          <Marca colapsado={false} />
+          {menuNavegacion}
+        </Drawer>
+      ) : (
+        <Sider
+          collapsible
+          collapsed={colapsado}
+          onCollapse={setColapsado}
+          breakpoint="xl"
+          collapsedWidth={64}
           theme="dark"
-          mode="inline"
-          selectedKeys={[claveSeleccionada(location.pathname)]}
-          defaultOpenKeys={['admin']}
-          items={items}
-          onClick={({ key }) => {
-            if (key.startsWith('/')) navigate(key)
-          }}
-        />
-      </Sider>
+          style={{ position: 'sticky', top: 0, height: '100vh', overflow: 'auto' }}
+        >
+          <Marca colapsado={colapsado} />
+          {menuNavegacion}
+        </Sider>
+      )}
 
       <Layout>
         <Header
@@ -162,14 +200,37 @@ export function AppShell() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            padding: '0 20px',
+            gap: 8,
+            padding: esMovil ? '0 12px' : '0 20px',
             borderBottom: '1px solid #f0f0f0',
+            position: 'sticky',
+            top: 0,
+            zIndex: 10,
           }}
         >
-          <Text strong style={{ fontSize: 16 }}>
-            Sistema de Gestión de Calidad
-          </Text>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+            {esMovil && (
+              <Button
+                type="text"
+                icon={<MenuOutlined />}
+                onClick={() => setDrawerAbierto(true)}
+                aria-label="Abrir menú"
+              />
+            )}
+            <Text
+              strong
+              style={{
+                fontSize: esMovil ? 14 : 16,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              {esMovil ? 'Calidad 360' : 'Sistema de Gestión de Calidad'}
+            </Text>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: esMovil ? 4 : 12, flexShrink: 0 }}>
             <NotificacionesMenu />
             <Dropdown
               menu={{
@@ -182,18 +243,18 @@ export function AppShell() {
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
                 <Avatar size="small" icon={<UserOutlined />} />
-                <Text>{usuario?.nombre ?? 'Invitado'}</Text>
+                {!esMovil && <Text>{usuario?.nombre ?? 'Invitado'}</Text>}
               </div>
             </Dropdown>
           </div>
         </Header>
 
-        <Content style={{ margin: 16 }}>
+        <Content style={{ margin: esMovil ? 8 : 16, minWidth: 0 }}>
           <div
             style={{
               background: '#fff',
               borderRadius: 8,
-              padding: 24,
+              padding: esMovil ? 14 : 24,
               minHeight: 'calc(100vh - 88px)',
             }}
           >

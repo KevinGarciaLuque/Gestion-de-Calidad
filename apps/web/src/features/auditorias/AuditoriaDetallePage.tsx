@@ -210,6 +210,7 @@ export function AuditoriaDetallePage() {
               <Table
                 rowKey="id"
                 size="small"
+                scroll={{ x: 'max-content' }}
                 dataSource={data.hallazgos}
                 pagination={false}
                 onRow={(r) => ({ onClick: () => navigate(`/hallazgos/${r.id}`), style: { cursor: 'pointer' } })}
