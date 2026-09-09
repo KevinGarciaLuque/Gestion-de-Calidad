@@ -23,6 +23,7 @@ import { SemaforoDot } from '@/components/Semaforo'
 import { ETIQUETA_TIPO_PROCESO, procesosApi, type FichaPayload, type VersionFicha } from './procesosApi'
 import { FichaEditor } from './FichaEditor'
 import { FichaVista } from './FichaVista'
+import { Flujograma } from './Flujograma'
 import { IdentificacionModal } from './IdentificacionModal'
 import { InteraccionesTab } from './InteraccionesTab'
 import { ProcesoIndicadoresTab } from './ProcesoIndicadoresTab'
@@ -277,6 +278,15 @@ export function ProcesoFichaPage() {
                   </>
                 )}
               </>
+            ),
+          },
+          {
+            key: 'flujograma',
+            label: 'Flujograma',
+            children: versionMostrada ? (
+              <Flujograma version={versionMostrada} />
+            ) : (
+              <Text type="secondary">Este proceso aún no tiene ficha.</Text>
             ),
           },
           {

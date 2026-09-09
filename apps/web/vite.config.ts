@@ -18,6 +18,7 @@ export default defineConfig({
           react: ['react', 'react-dom', 'react-router-dom'],
           antd: ['antd', '@ant-design/icons'],
           libs: ['@tanstack/react-query', 'axios', 'dayjs', 'zustand'],
+          mermaid: ['mermaid'],
         },
       },
     },
