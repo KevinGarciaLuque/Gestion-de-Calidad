@@ -28,6 +28,8 @@ logs/
 # editor / OS
 .DS_Store
 Thumbs.db
+~$*
+*.tmp
 .idea/
 .vscode/*
 !.vscode/extensions.json
