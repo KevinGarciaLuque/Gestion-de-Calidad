@@ -89,6 +89,61 @@ export class ProcesosService {
     }));
   }
 
+  /** Configuración de las bandas del mapa (marco ISO). Singleton. */
+  async mapaConfig() {
+    const cfg = await this.prisma.mapaProcesosConfig.upsert({
+      where: { id: 1 },
+      create: { id: 1 },
+      update: {},
+    });
+    return {
+      entradas: (cfg.entradas as string[]) ?? [],
+      salidas: (cfg.salidas as string[]) ?? [],
+      franjaSuperior: (cfg.franjaSuperior as string[]) ?? [],
+      notaPie: cfg.notaPie,
+      actualizadoAt: cfg.actualizadoAt,
+    };
+  }
+
+  async configurarMapa(
+    dto: { entradas?: string[]; salidas?: string[]; franjaSuperior?: string[]; notaPie?: string | null },
+    actor: UsuarioActual,
+  ) {
+    const limpiar = (arr?: string[]) =>
+      arr?.map((s) => String(s).trim()).filter(Boolean).slice(0, 12);
+    const cfg = await this.prisma.mapaProcesosConfig.upsert({
+      where: { id: 1 },
+      create: {
+        id: 1,
+        entradas: limpiar(dto.entradas) ?? [],
+        salidas: limpiar(dto.salidas) ?? [],
+        franjaSuperior: limpiar(dto.franjaSuperior) ?? [],
+        notaPie: dto.notaPie ?? null,
+      },
+      update: {
+        ...(dto.entradas !== undefined ? { entradas: limpiar(dto.entradas) } : {}),
+        ...(dto.salidas !== undefined ? { salidas: limpiar(dto.salidas) } : {}),
+        ...(dto.franjaSuperior !== undefined ? { franjaSuperior: limpiar(dto.franjaSuperior) } : {}),
+        ...(dto.notaPie !== undefined ? { notaPie: dto.notaPie } : {}),
+      },
+    });
+    await this.bitacora.registrar({
+      accion: 'proceso.configurar_mapa',
+      actorId: actor.id,
+      actorEmail: actor.email,
+      entidad: 'MapaProcesosConfig',
+      entidadId: '1',
+      valorNuevo: dto as never,
+    });
+    return {
+      entradas: cfg.entradas as string[],
+      salidas: cfg.salidas as string[],
+      franjaSuperior: cfg.franjaSuperior as string[],
+      notaPie: cfg.notaPie,
+      actualizadoAt: cfg.actualizadoAt,
+    };
+  }
+
   async obtener(id: string, actor: UsuarioActual) {
     const proceso = await this.prisma.proceso.findUnique({
       where: { id },

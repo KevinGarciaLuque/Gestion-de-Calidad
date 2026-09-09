@@ -9,6 +9,7 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
+import { ArrayMaxSize, IsArray, IsOptional, IsString, MaxLength } from 'class-validator';
 import { CurrentUser, RequierePermiso } from '../auth/rbac/decorators';
 import { PERMISO } from '../auth/rbac/permisos.catalog';
 import type { UsuarioActual } from '../auth/rbac/usuario-actual';
@@ -22,6 +23,17 @@ import {
   RevisionDto,
 } from './dto/proceso.dto';
 import { ProcesosService } from './procesos.service';
+
+class ConfigurarMapaDto {
+  @IsOptional() @IsArray() @ArrayMaxSize(12) @IsString({ each: true }) @MaxLength(120, { each: true })
+  entradas?: string[];
+  @IsOptional() @IsArray() @ArrayMaxSize(12) @IsString({ each: true }) @MaxLength(120, { each: true })
+  salidas?: string[];
+  @IsOptional() @IsArray() @ArrayMaxSize(12) @IsString({ each: true }) @MaxLength(120, { each: true })
+  franjaSuperior?: string[];
+  @IsOptional() @IsString() @MaxLength(500)
+  notaPie?: string;
+}
 
 @Controller('procesos')
 export class ProcesosController {
@@ -37,6 +49,18 @@ export class ProcesosController {
   @RequierePermiso(PERMISO.PROCESOS_VER)
   mapa(@CurrentUser() actor: UsuarioActual) {
     return this.procesos.mapa(actor);
+  }
+
+  @Get('mapa-config')
+  @RequierePermiso(PERMISO.PROCESOS_VER)
+  mapaConfig() {
+    return this.procesos.mapaConfig();
+  }
+
+  @Patch('mapa-config')
+  @RequierePermiso(PERMISO.PROCESOS_APROBAR)
+  configurarMapa(@Body() dto: ConfigurarMapaDto, @CurrentUser() actor: UsuarioActual) {
+    return this.procesos.configurarMapa(dto, actor);
   }
 
   @Get(':id')

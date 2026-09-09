@@ -9,6 +9,8 @@
 // Fase 7: hallazgos — análisis de causa, máquina de estados y verificación de eficacia.
 // Fase 8: planes de mejora, acciones (CAPA) y registro de mejora continua (MCC).
 // Fase 9: motor de automatizaciones, notificaciones y calendario transversal.
+// Fase 10: dashboard gerencial + reportes.
+// Extra: configuración visual del mapa de procesos (bandas ISO).
 
 generator client {
   provider = "prisma-client-js"
@@ -1130,6 +1132,20 @@ model ReglaAutomatizacion {
   actualizadoAt DateTime @updatedAt @map("actualizado_at")
 
   @@map("reglas_automatizacion")
+}
+
+/// Configuración de las bandas del mapa de procesos (marco ISO 9001):
+/// entradas a la izquierda, salidas a la derecha y la franja superior de
+/// liderazgo / política. El ciclo de mejora inferior es fijo. Singleton (id=1).
+model MapaProcesosConfig {
+  id             Int      @id @default(1)
+  entradas       Json     @default("[]") // ["Organización y su contexto", ...]
+  salidas        Json     @default("[]") // ["Satisfacción del cliente", ...]
+  franjaSuperior Json     @default("[]") @map("franja_superior") // ["Liderazgo", "Política de Calidad", ...]
+  notaPie        String?  @map("nota_pie") @db.Text
+  actualizadoAt  DateTime @updatedAt @map("actualizado_at")
+
+  @@map("mapa_procesos_config")
 }
 
 /// Última ejecución del motor (para el panel de administración).

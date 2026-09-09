@@ -127,9 +127,25 @@ export interface FichaPayload {
   notas?: string
 }
 
+export interface MapaConfig {
+  entradas: string[]
+  salidas: string[]
+  franjaSuperior: string[]
+  notaPie: string | null
+  actualizadoAt: string
+}
+
 export const procesosApi = {
   async mapa(): Promise<{ tipo: TipoProceso; procesos: ProcesoResumen[] }[]> {
     const { data } = await api.get('/procesos/mapa')
+    return data
+  },
+  async mapaConfig(): Promise<MapaConfig> {
+    const { data } = await api.get('/procesos/mapa-config')
+    return data
+  },
+  async guardarMapaConfig(payload: Partial<Omit<MapaConfig, 'actualizadoAt'>>): Promise<MapaConfig> {
+    const { data } = await api.patch('/procesos/mapa-config', payload)
     return data
   },
   async listar(params: {

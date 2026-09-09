@@ -71,6 +71,23 @@ async function main(): Promise<void> {
   }
   console.log(`✓ ${REGLAS_DEFAULT.length} reglas de automatización`);
 
+  // 3d. Configuración del mapa de procesos (bandas ISO; no pisa lo editado)
+  await prisma.mapaProcesosConfig.upsert({
+    where: { id: 1 },
+    create: {
+      id: 1,
+      entradas: [
+        'Organización y su contexto',
+        'Necesidades y expectativas de las partes interesadas',
+        'Requisitos del cliente',
+      ],
+      salidas: ['Satisfacción del cliente', 'Resultados del SGC', 'Productos y servicios'],
+      franjaSuperior: ['Liderazgo', 'Política de Calidad', 'Planificación', 'Enfoque al cliente'],
+    },
+    update: {},
+  });
+  console.log('✓ configuración del mapa de procesos');
+
   // 4. Unidad raíz
   const hospital = await prisma.unidadOrganizativa.upsert({
     where: { codigo: 'HOSP-01' },
