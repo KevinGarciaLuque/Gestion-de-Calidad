@@ -305,10 +305,15 @@ function TarjetaProceso({
       </Flex>
       <Flex justify="space-between" align="center" gap={6}>
         <span className="cod">{proceso.codigo}</span>
-        {proceso.estado === 'BORRADOR' && <Tag color="default" style={{ margin: 0 }}>Borrador</Tag>}
-        {proceso.enRevision && <Tag color="gold" style={{ margin: 0 }}>En revisión</Tag>}
-        {proceso.estado === 'VIGENTE' && !proceso.enRevision && proceso.versionVigente != null && (
-          <Tag color="green" style={{ margin: 0 }}>v{proceso.versionVigente}</Tag>
+        {proceso.enRevision ? (
+          <Tag color="gold" style={{ margin: 0 }}>En revisión</Tag>
+        ) : proceso.estado === 'VIGENTE' && proceso.versionVigente != null ? (
+          <Tag color="green" style={{ margin: 0 }}>
+            v{proceso.versionVigente}
+            {proceso.tieneCambiosEnCurso ? ' · cambios' : ''}
+          </Tag>
+        ) : (
+          <Tag color="default" style={{ margin: 0 }}>Borrador</Tag>
         )}
       </Flex>
     </div>
