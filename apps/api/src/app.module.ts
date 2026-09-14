@@ -14,6 +14,7 @@ import { AutomatizacionesModule } from './automatizaciones/automatizaciones.modu
 import { CalendarioModule } from './calendario/calendario.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { ReportesModule } from './reportes/reportes.module';
+import { RespaldosModule } from './respaldos/respaldos.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { AuthModule } from './auth/auth.module';
@@ -62,6 +63,7 @@ import { MccModule } from './mcc/mcc.module';
     CalendarioModule,
     DashboardModule,
     ReportesModule,
+    RespaldosModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: HttpExceptionFilter },

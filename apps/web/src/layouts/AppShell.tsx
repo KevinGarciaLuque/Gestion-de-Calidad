@@ -57,6 +57,7 @@ const MODULOS: ItemModulo[] = [
       { key: '/admin/organizacion', icon: null, label: 'Estructura organizacional', permiso: 'organizacion.ver' },
       { key: '/admin/automatizaciones', icon: null, label: 'Automatizaciones', permiso: 'automatizaciones.configurar' },
       { key: '/admin/bitacora', icon: null, label: 'Bitácora', permiso: 'bitacora.ver' },
+      { key: '/admin/respaldos', icon: null, label: 'Respaldos', permiso: 'respaldos.gestionar' },
     ],
   },
 ]
@@ -67,6 +68,7 @@ const RUTAS_MENU = [
   '/admin/organizacion',
   '/admin/automatizaciones',
   '/admin/bitacora',
+  '/admin/respaldos',
   '/calendario',
   '/notificaciones',
   '/reportes',

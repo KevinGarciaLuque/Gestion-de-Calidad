@@ -25,6 +25,7 @@ import { UsuariosPage } from '@/features/usuarios/UsuariosPage'
 import { RolesPage } from '@/features/roles/RolesPage'
 import { OrganizacionPage } from '@/features/organizacion/OrganizacionPage'
 import { BitacoraPage } from '@/features/bitacora/BitacoraPage'
+import { RespaldosPage } from '@/features/respaldos/RespaldosPage'
 import { PerfilPage } from '@/features/perfil/PerfilPage'
 import { CambiarPasswordObligatorioPage } from '@/features/perfil/CambiarPasswordObligatorioPage'
 import { NotificacionesPage } from '@/features/notificaciones/NotificacionesPage'
@@ -229,6 +230,14 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute permiso="bitacora.ver">
             <BitacoraPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'admin/respaldos',
+        element: (
+          <ProtectedRoute permiso="respaldos.gestionar">
+            <RespaldosPage />
           </ProtectedRoute>
         ),
       },

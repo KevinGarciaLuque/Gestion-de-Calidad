@@ -19,6 +19,10 @@ export interface AppConfig {
   archivosDir: string;
   /** Tamaño máximo de archivo en bytes. */
   archivoMaxBytes: number;
+  /** Carpeta donde se guardan los respaldos de la base de datos. */
+  backupsDir: string;
+  /** Cuántos respaldos diarios conservar antes de borrar los más viejos. */
+  backupsRetener: number;
 }
 
 export default (): AppConfig => ({
@@ -40,4 +44,6 @@ export default (): AppConfig => ({
   },
   archivosDir: resolve(process.env.ARCHIVOS_DIR ?? 'storage/documentos'),
   archivoMaxBytes: parseInt(process.env.ARCHIVO_MAX_BYTES ?? String(25 * 1024 * 1024), 10),
+  backupsDir: resolve(process.env.BACKUPS_DIR ?? 'storage/backups'),
+  backupsRetener: parseInt(process.env.BACKUPS_RETENER ?? '14', 10),
 });

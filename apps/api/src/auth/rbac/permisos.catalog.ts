@@ -108,6 +108,9 @@ export const PERMISOS: DefinicionPermiso[] = [
 
   // Reportes
   { codigo: 'reportes.ver', modulo: 'reportes', descripcion: 'Generar y descargar reportes del SGC' },
+
+  // Respaldos (solo administración técnica)
+  { codigo: 'respaldos.gestionar', modulo: 'respaldos', descripcion: 'Generar, listar y descargar respaldos de la base de datos' },
 ];
 
 /** Objeto de acceso tipado: PERMISO.USUARIOS_CREAR === 'usuarios.crear'. */
@@ -171,6 +174,7 @@ export const PERMISO = {
   RIESGOS_ARCHIVAR: 'riesgos.archivar',
   DASHBOARD_VER: 'dashboard.ver',
   REPORTES_VER: 'reportes.ver',
+  RESPALDOS_GESTIONAR: 'respaldos.gestionar',
 } as const;
 
 // ── Roles ───────────────────────────────────────────────────────────────────
