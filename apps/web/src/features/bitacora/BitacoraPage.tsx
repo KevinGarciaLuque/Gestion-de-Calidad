@@ -4,6 +4,7 @@ import type { ColumnsType } from 'antd/es/table'
 import { useQuery } from '@tanstack/react-query'
 import dayjs, { type Dayjs } from 'dayjs'
 import { bitacoraApi, type EventoBitacora } from './bitacoraApi'
+import { DetalleEvento } from './DetalleEvento'
 
 const { Title, Text } = Typography
 const { RangePicker } = DatePicker
@@ -97,16 +98,8 @@ export function BitacoraPage() {
         loading={isFetching}
         size="small"
         expandable={{
-          expandedRowRender: (r) => (
-            <pre style={{ margin: 0, fontSize: 12, whiteSpace: 'pre-wrap' }}>
-              {JSON.stringify(
-                { anterior: r.valorAnterior, nuevo: r.valorNuevo, ip: r.ip, userAgent: r.userAgent },
-                null,
-                2,
-              )}
-            </pre>
-          ),
-          rowExpandable: (r) => !!(r.valorAnterior || r.valorNuevo || r.ip),
+          expandedRowRender: (r) => <DetalleEvento evento={r} />,
+          rowExpandable: (r) => !!(r.valorAnterior || r.valorNuevo || r.ip || r.userAgent),
         }}
         pagination={{
           current: pagina,
