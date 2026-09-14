@@ -1,6 +1,7 @@
-import { App as AntdApp, ConfigProvider } from 'antd'
+import { App as AntdApp, Button, ConfigProvider, Result } from 'antd'
 import esES from 'antd/locale/es_ES'
 import { QueryClientProvider } from '@tanstack/react-query'
+import * as Sentry from '@sentry/react'
 import { useEffect } from 'react'
 import { RouterProvider } from 'react-router-dom'
 import dayjs from 'dayjs'
@@ -28,10 +29,27 @@ export function App() {
   return (
     <ConfigProvider locale={esES} theme={themeCalidad360}>
       <AntdApp>
-        <QueryClientProvider client={queryClient}>
-          <RouterProvider router={router} />
-        </QueryClientProvider>
+        <Sentry.ErrorBoundary fallback={<ErrorFallback />}>
+          <QueryClientProvider client={queryClient}>
+            <RouterProvider router={router} />
+          </QueryClientProvider>
+        </Sentry.ErrorBoundary>
       </AntdApp>
     </ConfigProvider>
+  )
+}
+
+function ErrorFallback() {
+  return (
+    <Result
+      status="error"
+      title="Ocurrió un error inesperado"
+      subTitle="El equipo de sistemas ya fue notificado. Intenta recargar la página."
+      extra={
+        <Button type="primary" onClick={() => window.location.reload()}>
+          Recargar
+        </Button>
+      }
+    />
   )
 }

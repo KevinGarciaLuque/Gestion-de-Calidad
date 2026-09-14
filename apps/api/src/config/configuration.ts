@@ -23,6 +23,8 @@ export interface AppConfig {
   backupsDir: string;
   /** Cuántos respaldos diarios conservar antes de borrar los más viejos. */
   backupsRetener: number;
+  /** DSN de Sentry para monitoreo de errores; si no está definido, Sentry queda desactivado. */
+  sentryDsn: string | undefined;
 }
 
 export default (): AppConfig => ({
@@ -46,4 +48,5 @@ export default (): AppConfig => ({
   archivoMaxBytes: parseInt(process.env.ARCHIVO_MAX_BYTES ?? String(25 * 1024 * 1024), 10),
   backupsDir: resolve(process.env.BACKUPS_DIR ?? 'storage/backups'),
   backupsRetener: parseInt(process.env.BACKUPS_RETENER ?? '14', 10),
+  sentryDsn: process.env.SENTRY_DSN || undefined,
 });

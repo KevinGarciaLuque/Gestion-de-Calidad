@@ -7,6 +7,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
+import { capturarExcepcion } from '../monitoreo/sentry';
 
 interface RespuestaError {
   statusCode: number;
@@ -45,6 +46,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
       }
     } else if (exception instanceof Error) {
       this.logger.error(exception.message, exception.stack);
+    }
+
+    if (status >= HttpStatus.INTERNAL_SERVER_ERROR) {
+      capturarExcepcion(exception);
     }
 
     const payload: RespuestaError = {
