@@ -25,6 +25,15 @@ export interface AppConfig {
   backupsRetener: number;
   /** DSN de Sentry para monitoreo de errores; si no está definido, Sentry queda desactivado. */
   sentryDsn: string | undefined;
+  /** Almacenamiento S3-compatible (AWS S3, Cloudflare R2, Backblaze B2, MinIO). Si falta el bucket, se usa disco local. */
+  s3: {
+    bucket: string;
+    region: string;
+    endpoint: string | undefined;
+    accessKeyId: string;
+    secretAccessKey: string;
+    forcePathStyle: boolean;
+  } | null;
 }
 
 export default (): AppConfig => ({
@@ -49,4 +58,15 @@ export default (): AppConfig => ({
   backupsDir: resolve(process.env.BACKUPS_DIR ?? 'storage/backups'),
   backupsRetener: parseInt(process.env.BACKUPS_RETENER ?? '14', 10),
   sentryDsn: process.env.SENTRY_DSN || undefined,
+  s3:
+    process.env.S3_BUCKET && process.env.S3_ACCESS_KEY_ID && process.env.S3_SECRET_ACCESS_KEY
+      ? {
+          bucket: process.env.S3_BUCKET,
+          region: process.env.S3_REGION ?? 'auto',
+          endpoint: process.env.S3_ENDPOINT || undefined,
+          accessKeyId: process.env.S3_ACCESS_KEY_ID,
+          secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+          forcePathStyle: process.env.S3_FORCE_PATH_STYLE === 'true',
+        }
+      : null,
 });

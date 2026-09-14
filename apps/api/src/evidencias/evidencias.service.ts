@@ -75,7 +75,7 @@ export class EvidenciasService {
     const ev = await this.prisma.evidencia.findFirst({ where: { id: evidenciaId, entidad, entidadId } });
     if (!ev) throw new NotFoundException('Evidencia no encontrada');
     return {
-      stream: this.almacen.streamDe(ev.rutaRelativa),
+      stream: await this.almacen.streamDe(ev.rutaRelativa),
       nombre: ev.nombreOriginal,
       mimeType: ev.mimeType,
       tamano: ev.tamanoBytes,

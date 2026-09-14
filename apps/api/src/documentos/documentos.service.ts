@@ -486,7 +486,7 @@ export class DocumentosService {
     const version = doc.versiones.find((v) => v.id === versionId);
     if (!version || !version.archivo) throw new NotFoundException('Versión o archivo no encontrado');
     return {
-      stream: this.almacen.streamDe(version.archivo.rutaRelativa),
+      stream: await this.almacen.streamDe(version.archivo.rutaRelativa),
       nombre: version.archivo.nombreOriginal,
       mimeType: version.archivo.mimeType,
       tamano: version.archivo.tamanoBytes,
