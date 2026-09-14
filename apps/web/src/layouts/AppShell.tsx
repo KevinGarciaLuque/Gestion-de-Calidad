@@ -6,6 +6,7 @@ import {
   FilePdfOutlined,
   DashboardOutlined,
   FileTextOutlined,
+  LeftOutlined,
   LogoutOutlined,
   MenuOutlined,
   PartitionOutlined,
@@ -25,6 +26,23 @@ import { NotificacionesMenu } from '@/features/notificaciones/NotificacionesMenu
 
 const { Header, Sider, Content } = Layout
 const { Text } = Typography
+
+const ESTILOS_TOGGLE = `
+.sider-toggle {
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease, box-shadow 0.2s ease;
+}
+.sider-toggle:hover {
+  background-color: #0077bf;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+  transform: scale(1.1);
+}
+.sider-toggle.colapsado {
+  transform: rotate(180deg);
+}
+.sider-toggle.colapsado:hover {
+  transform: rotate(180deg) scale(1.1);
+}
+`
 
 interface ItemModulo {
   key: string
@@ -184,15 +202,44 @@ export function AppShell() {
       ) : (
         <Sider
           collapsible
+          trigger={null}
           collapsed={colapsado}
           onCollapse={setColapsado}
           breakpoint="xl"
           collapsedWidth={64}
           theme="dark"
-          style={{ position: 'sticky', top: 0, height: '100vh', overflow: 'auto' }}
+          style={{ position: 'sticky', top: 0, height: '100vh', overflow: 'visible' }}
         >
-          <Marca colapsado={colapsado} />
-          {menuNavegacion}
+          <style>{ESTILOS_TOGGLE}</style>
+          <div style={{ height: '100%', overflow: 'auto' }}>
+            <Marca colapsado={colapsado} />
+            {menuNavegacion}
+          </div>
+          <button
+            className={`sider-toggle${colapsado ? ' colapsado' : ''}`}
+            onClick={() => setColapsado(!colapsado)}
+            aria-label={colapsado ? 'Expandir menú' : 'Colapsar menú'}
+            style={{
+              position: 'absolute',
+              top: 64,
+              right: -14,
+              width: 28,
+              height: 28,
+              borderRadius: '50%',
+              border: '2px solid #001f33',
+              background: '#00629b',
+              color: '#fff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+              zIndex: 20,
+              padding: 0,
+            }}
+          >
+            <LeftOutlined style={{ fontSize: 11 }} />
+          </button>
         </Sider>
       )}
 
