@@ -1,0 +1,94 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api:
+    name: API (build · lint · tests)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/api
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: calidad360_ci
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -proot"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=15
+
+    env:
+      NODE_ENV: test
+      DATABASE_URL: mysql://root:root@127.0.0.1:3306/calidad360_ci
+      JWT_ACCESS_SECRET: ci-access-secret-not-for-production
+      JWT_REFRESH_SECRET: ci-refresh-secret-not-for-production
+      SEED_ADMIN_EMAIL: admin@calidad360.local
+      SEED_ADMIN_PASSWORD: Admin.123456
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: apps/api/package-lock.json
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Aplicar migraciones
+        run: npx prisma migrate deploy
+
+      - name: Sembrar datos base (permisos, roles, admin)
+        run: npm run db:seed
+
+      - name: Compilar
+        run: npm run build
+
+      - name: Revisar estilo (no bloquea aún — hay deuda previa)
+        run: npm run lint:check
+        continue-on-error: true
+
+      - name: Pruebas unitarias
+        run: npm run test
+
+      - name: Pruebas end-to-end
+        run: npm run test:e2e
+
+  web:
+    name: Web (build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Compilar (type-check + build)
+        run: npm run build
