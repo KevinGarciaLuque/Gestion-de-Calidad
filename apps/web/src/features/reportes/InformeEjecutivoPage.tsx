@@ -1,10 +1,11 @@
-import { ArrowLeftOutlined, PrinterOutlined } from '@ant-design/icons'
-import { Button, Flex, Skeleton, Typography } from 'antd'
+import { ArrowLeftOutlined, FilePdfOutlined, PrinterOutlined } from '@ant-design/icons'
+import { Button, Flex, Skeleton, Typography, message } from 'antd'
 import { useQuery } from '@tanstack/react-query'
 import dayjs from 'dayjs'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { semaforo } from '@/app/theme'
-import { reportesApi } from './reportesApi'
+import { descargarInformeEjecutivoPdf, reportesApi } from './reportesApi'
 
 const { Title, Text } = Typography
 
@@ -24,18 +25,35 @@ const ESTILOS_IMPRESION = `
 export function InformeEjecutivoPage() {
   const navigate = useNavigate()
   const { data, isLoading } = useQuery({ queryKey: ['reporte-ejecutivo'], queryFn: reportesApi.ejecutivo })
+  const [descargando, setDescargando] = useState(false)
+
+  async function descargarPdf() {
+    setDescargando(true)
+    try {
+      await descargarInformeEjecutivoPdf()
+    } catch {
+      message.error('No se pudo generar el PDF')
+    } finally {
+      setDescargando(false)
+    }
+  }
 
   return (
     <>
       <style>{ESTILOS_IMPRESION}</style>
 
-      <Flex justify="space-between" align="center" className="informe-no-print" style={{ marginBottom: 16 }}>
+      <Flex justify="space-between" align="center" className="informe-no-print" style={{ marginBottom: 16 }} wrap="wrap" gap={8}>
         <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/reportes')}>
           Volver a reportes
         </Button>
-        <Button type="primary" icon={<PrinterOutlined />} onClick={() => window.print()}>
-          Imprimir / Guardar PDF
-        </Button>
+        <Flex gap={8}>
+          <Button icon={<PrinterOutlined />} onClick={() => window.print()}>
+            Imprimir
+          </Button>
+          <Button type="primary" icon={<FilePdfOutlined />} loading={descargando} onClick={descargarPdf}>
+            Descargar PDF
+          </Button>
+        </Flex>
       </Flex>
 
       {isLoading || !data ? (

@@ -2,6 +2,7 @@ import { Controller, Get, Param, Query, Res } from '@nestjs/common';
 import type { Response } from 'express';
 import { RequierePermiso } from '../auth/rbac/decorators';
 import { PERMISO } from '../auth/rbac/permisos.catalog';
+import { generarInformePdf } from './informe-pdf';
 import { ReportesService } from './reportes.service';
 
 @Controller('reportes')
@@ -17,6 +18,17 @@ export class ReportesController {
   @Get('ejecutivo')
   ejecutivo() {
     return this.reportes.ejecutivo();
+  }
+
+  @Get('ejecutivo/pdf')
+  async ejecutivoPdf(@Res() res: Response) {
+    const data = await this.reportes.ejecutivo();
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="informe-ejecutivo-${data.generadoAt.slice(0, 10)}.pdf"`,
+    );
+    generarInformePdf(data).pipe(res);
   }
 
   @Get(':tipo')

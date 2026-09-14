@@ -40,3 +40,20 @@ export async function descargarReporteCsv(tipo: string, nombre: string): Promise
   a.remove()
   setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
+
+export async function descargarInformeEjecutivoPdf(): Promise<void> {
+  const base = api.defaults.baseURL ?? '/api'
+  const res = await fetch(`${base}/reportes/ejecutivo/pdf`, {
+    headers: { Authorization: `Bearer ${getAccessToken() ?? ''}` },
+  })
+  if (!res.ok) throw new Error('No se pudo generar el PDF')
+  const blob = await res.blob()
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `informe-ejecutivo-${new Date().toISOString().slice(0, 10)}.pdf`
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
+}
