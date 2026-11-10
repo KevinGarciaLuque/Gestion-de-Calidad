@@ -19,8 +19,9 @@ import {
 } from '@ant-design/icons'
 import { Avatar, Button, Drawer, Dropdown, Grid, Layout, Menu, Typography } from 'antd'
 import type { MenuProps } from 'antd'
-import { useEffect, useMemo, useState } from 'react'
+import { Suspense, useEffect, useMemo, useState } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { Cargando } from '@/components/Cargando'
 import { useAuth } from '@/features/auth/useAuth'
 import { useAuthStore } from '@/features/auth/authStore'
 import { NotificacionesMenu } from '@/features/notificaciones/NotificacionesMenu'
@@ -310,7 +311,9 @@ export function AppShell() {
               minHeight: 'calc(100vh - 88px)',
             }}
           >
-            <Outlet />
+            <Suspense fallback={<Cargando />}>
+              <Outlet />
+            </Suspense>
           </div>
         </Content>
       </Layout>

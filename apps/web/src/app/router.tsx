@@ -1,45 +1,60 @@
+import { lazy, Suspense, type ReactNode } from 'react'
 import { createBrowserRouter } from 'react-router-dom'
+import { Cargando } from '@/components/Cargando'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { AppShell } from '@/layouts/AppShell'
-import { DashboardPage } from '@/pages/DashboardPage'
-import { LoginPage } from '@/pages/LoginPage'
-import { NotFoundPage } from '@/pages/NotFoundPage'
-import { MapaProcesosPage } from '@/features/procesos/MapaProcesosPage'
-import { ProcesoFichaPage } from '@/features/procesos/ProcesoFichaPage'
-import { IndicadoresPage } from '@/features/indicadores/IndicadoresPage'
-import { IndicadorDetallePage } from '@/features/indicadores/IndicadorDetallePage'
-import { RiesgosPage } from '@/features/riesgos/RiesgosPage'
-import { RiesgoDetallePage } from '@/features/riesgos/RiesgoDetallePage'
-import { MatrizConfigPage } from '@/features/riesgos/MatrizConfigPage'
-import { DocumentosPage } from '@/features/documentos/DocumentosPage'
-import { DocumentoDetallePage } from '@/features/documentos/DocumentoDetallePage'
-import { AuditoriasPage } from '@/features/auditorias/AuditoriasPage'
-import { AuditoriaDetallePage } from '@/features/auditorias/AuditoriaDetallePage'
-import { HallazgosPage } from '@/features/hallazgos/HallazgosPage'
-import { HallazgoDetallePage } from '@/features/hallazgos/HallazgoDetallePage'
-import { AccionesPage } from '@/features/acciones/AccionesPage'
-import { AccionDetallePage } from '@/features/acciones/AccionDetallePage'
-import { MccPage } from '@/features/mcc/MccPage'
-import { MccDetallePage } from '@/features/mcc/MccDetallePage'
-import { UsuariosPage } from '@/features/usuarios/UsuariosPage'
-import { RolesPage } from '@/features/roles/RolesPage'
-import { OrganizacionPage } from '@/features/organizacion/OrganizacionPage'
-import { BitacoraPage } from '@/features/bitacora/BitacoraPage'
-import { RespaldosPage } from '@/features/respaldos/RespaldosPage'
-import { PerfilPage } from '@/features/perfil/PerfilPage'
-import { CambiarPasswordObligatorioPage } from '@/features/perfil/CambiarPasswordObligatorioPage'
-import { NotificacionesPage } from '@/features/notificaciones/NotificacionesPage'
-import { CalendarioPage } from '@/features/calendario/CalendarioPage'
-import { AutomatizacionesConfigPage } from '@/features/automatizaciones/AutomatizacionesConfigPage'
-import { ReportesPage } from '@/features/reportes/ReportesPage'
-import { InformeEjecutivoPage } from '@/features/reportes/InformeEjecutivoPage'
-import { EncuestasPage } from '@/features/encuestas/EncuestasPage'
-import { ResponderEncuestaPage } from '@/features/encuestas/ResponderEncuestaPage'
+
+// Cada página se descarga bajo demanda (code-splitting por ruta): así el login
+// y el panel inicial no pagan el costo de JS de módulos que no van a usar
+// (Mermaid, matriz de riesgos, reportes, etc.).
+const DashboardPage = lazy(() => import('@/pages/DashboardPage').then((m) => ({ default: m.DashboardPage })))
+const LoginPage = lazy(() => import('@/pages/LoginPage').then((m) => ({ default: m.LoginPage })))
+const NotFoundPage = lazy(() => import('@/pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })))
+const MapaProcesosPage = lazy(() => import('@/features/procesos/MapaProcesosPage').then((m) => ({ default: m.MapaProcesosPage })))
+const ProcesoFichaPage = lazy(() => import('@/features/procesos/ProcesoFichaPage').then((m) => ({ default: m.ProcesoFichaPage })))
+const IndicadoresPage = lazy(() => import('@/features/indicadores/IndicadoresPage').then((m) => ({ default: m.IndicadoresPage })))
+const IndicadorDetallePage = lazy(() => import('@/features/indicadores/IndicadorDetallePage').then((m) => ({ default: m.IndicadorDetallePage })))
+const RiesgosPage = lazy(() => import('@/features/riesgos/RiesgosPage').then((m) => ({ default: m.RiesgosPage })))
+const RiesgoDetallePage = lazy(() => import('@/features/riesgos/RiesgoDetallePage').then((m) => ({ default: m.RiesgoDetallePage })))
+const MatrizConfigPage = lazy(() => import('@/features/riesgos/MatrizConfigPage').then((m) => ({ default: m.MatrizConfigPage })))
+const DocumentosPage = lazy(() => import('@/features/documentos/DocumentosPage').then((m) => ({ default: m.DocumentosPage })))
+const DocumentoDetallePage = lazy(() => import('@/features/documentos/DocumentoDetallePage').then((m) => ({ default: m.DocumentoDetallePage })))
+const AuditoriasPage = lazy(() => import('@/features/auditorias/AuditoriasPage').then((m) => ({ default: m.AuditoriasPage })))
+const AuditoriaDetallePage = lazy(() => import('@/features/auditorias/AuditoriaDetallePage').then((m) => ({ default: m.AuditoriaDetallePage })))
+const HallazgosPage = lazy(() => import('@/features/hallazgos/HallazgosPage').then((m) => ({ default: m.HallazgosPage })))
+const HallazgoDetallePage = lazy(() => import('@/features/hallazgos/HallazgoDetallePage').then((m) => ({ default: m.HallazgoDetallePage })))
+const AccionesPage = lazy(() => import('@/features/acciones/AccionesPage').then((m) => ({ default: m.AccionesPage })))
+const AccionDetallePage = lazy(() => import('@/features/acciones/AccionDetallePage').then((m) => ({ default: m.AccionDetallePage })))
+const MccPage = lazy(() => import('@/features/mcc/MccPage').then((m) => ({ default: m.MccPage })))
+const MccDetallePage = lazy(() => import('@/features/mcc/MccDetallePage').then((m) => ({ default: m.MccDetallePage })))
+const UsuariosPage = lazy(() => import('@/features/usuarios/UsuariosPage').then((m) => ({ default: m.UsuariosPage })))
+const RolesPage = lazy(() => import('@/features/roles/RolesPage').then((m) => ({ default: m.RolesPage })))
+const OrganizacionPage = lazy(() => import('@/features/organizacion/OrganizacionPage').then((m) => ({ default: m.OrganizacionPage })))
+const BitacoraPage = lazy(() => import('@/features/bitacora/BitacoraPage').then((m) => ({ default: m.BitacoraPage })))
+const RespaldosPage = lazy(() => import('@/features/respaldos/RespaldosPage').then((m) => ({ default: m.RespaldosPage })))
+const PerfilPage = lazy(() => import('@/features/perfil/PerfilPage').then((m) => ({ default: m.PerfilPage })))
+const CambiarPasswordObligatorioPage = lazy(() =>
+  import('@/features/perfil/CambiarPasswordObligatorioPage').then((m) => ({ default: m.CambiarPasswordObligatorioPage })),
+)
+const NotificacionesPage = lazy(() => import('@/features/notificaciones/NotificacionesPage').then((m) => ({ default: m.NotificacionesPage })))
+const CalendarioPage = lazy(() => import('@/features/calendario/CalendarioPage').then((m) => ({ default: m.CalendarioPage })))
+const AutomatizacionesConfigPage = lazy(() =>
+  import('@/features/automatizaciones/AutomatizacionesConfigPage').then((m) => ({ default: m.AutomatizacionesConfigPage })),
+)
+const ReportesPage = lazy(() => import('@/features/reportes/ReportesPage').then((m) => ({ default: m.ReportesPage })))
+const InformeEjecutivoPage = lazy(() => import('@/features/reportes/InformeEjecutivoPage').then((m) => ({ default: m.InformeEjecutivoPage })))
+const EncuestasPage = lazy(() => import('@/features/encuestas/EncuestasPage').then((m) => ({ default: m.EncuestasPage })))
+const ResponderEncuestaPage = lazy(() => import('@/features/encuestas/ResponderEncuestaPage').then((m) => ({ default: m.ResponderEncuestaPage })))
+
+/** Envuelve un elemento perezoso en su propio Suspense (para las rutas fuera de AppShell). */
+function pagina(elemento: ReactNode) {
+  return <Suspense fallback={<Cargando />}>{elemento}</Suspense>
+}
 
 export const router = createBrowserRouter([
-  { path: '/login', element: <LoginPage /> },
-  { path: '/perfil/cambiar-password', element: <CambiarPasswordObligatorioPage /> },
-  { path: '/encuestas/responder/:procesoId', element: <ResponderEncuestaPage /> },
+  { path: '/login', element: pagina(<LoginPage />) },
+  { path: '/perfil/cambiar-password', element: pagina(<CambiarPasswordObligatorioPage />) },
+  { path: '/encuestas/responder/:procesoId', element: pagina(<ResponderEncuestaPage />) },
   {
     path: '/',
     element: (
