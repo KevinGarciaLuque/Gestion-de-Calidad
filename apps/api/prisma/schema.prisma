@@ -263,6 +263,7 @@ model Proceso {
   auditoriaItems AuditoriaItem[]
   hallazgos      Hallazgo[]
   acciones       Accion[]
+  encuestas      EncuestaSatisfaccion[]
 
   @@index([tipo])
   @@index([areaId])
@@ -1160,4 +1161,28 @@ model EjecucionMotor {
   manual        Boolean  @default(false)
 
   @@map("ejecuciones_motor")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Encuestas de satisfacción (plantilla fija, respuesta pública por proceso)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Respuesta de un paciente/usuario a la encuesta de satisfacción de un
+/// proceso. Se llena desde un enlace público (sin sesión); no guarda datos
+/// personales del respondente, solo las calificaciones y el comentario.
+model EncuestaSatisfaccion {
+  id                  String   @id @default(uuid())
+  procesoId           String   @map("proceso_id")
+  calificacionGeneral Int      @map("calificacion_general")
+  atencionPersonal    Int      @map("atencion_personal")
+  tiempoEspera        Int      @map("tiempo_espera")
+  limpieza            Int
+  recomendaria        Boolean?
+  comentario          String?  @db.Text
+  creadoAt            DateTime @default(now()) @map("creado_at")
+
+  proceso Proceso @relation(fields: [procesoId], references: [id], onDelete: Cascade)
+
+  @@index([procesoId, creadoAt])
+  @@map("encuestas_satisfaccion")
 }

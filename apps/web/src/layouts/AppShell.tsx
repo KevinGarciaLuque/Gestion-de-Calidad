@@ -12,6 +12,7 @@ import {
   PartitionOutlined,
   SafetyOutlined,
   SettingOutlined,
+  SmileOutlined,
   ThunderboltOutlined,
   UserOutlined,
   WarningOutlined,
@@ -63,6 +64,7 @@ const MODULOS: ItemModulo[] = [
   { key: '/hallazgos', icon: <SafetyOutlined />, label: 'Hallazgos y NC', permiso: 'hallazgos.ver' },
   { key: '/acciones', icon: <ThunderboltOutlined />, label: 'Planes y acciones', permiso: 'acciones.ver' },
   { key: '/mcc', icon: <BulbOutlined />, label: 'Mejora continua', permiso: 'mcc.ver' },
+  { key: '/encuestas', icon: <SmileOutlined />, label: 'Encuestas', permiso: 'encuestas.ver' },
   { key: '/calendario', icon: <CalendarOutlined />, label: 'Calendario' },
   { key: '/reportes', icon: <FilePdfOutlined />, label: 'Reportes', permiso: 'reportes.ver' },
   {
@@ -98,6 +100,7 @@ const RUTAS_MENU = [
   '/hallazgos',
   '/acciones',
   '/mcc',
+  '/encuestas',
   '/',
 ]
 

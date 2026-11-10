@@ -33,10 +33,13 @@ import { CalendarioPage } from '@/features/calendario/CalendarioPage'
 import { AutomatizacionesConfigPage } from '@/features/automatizaciones/AutomatizacionesConfigPage'
 import { ReportesPage } from '@/features/reportes/ReportesPage'
 import { InformeEjecutivoPage } from '@/features/reportes/InformeEjecutivoPage'
+import { EncuestasPage } from '@/features/encuestas/EncuestasPage'
+import { ResponderEncuestaPage } from '@/features/encuestas/ResponderEncuestaPage'
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
   { path: '/perfil/cambiar-password', element: <CambiarPasswordObligatorioPage /> },
+  { path: '/encuestas/responder/:procesoId', element: <ResponderEncuestaPage /> },
   {
     path: '/',
     element: (
@@ -198,6 +201,14 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute permiso="mcc.ver">
             <MccDetallePage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'encuestas',
+        element: (
+          <ProtectedRoute permiso="encuestas.ver">
+            <EncuestasPage />
           </ProtectedRoute>
         ),
       },

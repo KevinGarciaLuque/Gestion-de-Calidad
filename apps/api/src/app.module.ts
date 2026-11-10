@@ -30,6 +30,7 @@ import { AuditoriasModule } from './auditorias/auditorias.module';
 import { HallazgosModule } from './hallazgos/hallazgos.module';
 import { AccionesModule } from './acciones/acciones.module';
 import { MccModule } from './mcc/mcc.module';
+import { EncuestasModule } from './encuestas/encuestas.module';
 
 @Module({
   imports: [
@@ -64,6 +65,7 @@ import { MccModule } from './mcc/mcc.module';
     DashboardModule,
     ReportesModule,
     RespaldosModule,
+    EncuestasModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: HttpExceptionFilter },

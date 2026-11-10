@@ -155,6 +155,7 @@ export const procesosApi = {
     tipo?: TipoProceso
     estado?: EstadoProceso
     pagina?: number
+    porPagina?: number
   }): Promise<Paginado<ProcesoResumen>> {
     const { data } = await api.get('/procesos', { params })
     return data

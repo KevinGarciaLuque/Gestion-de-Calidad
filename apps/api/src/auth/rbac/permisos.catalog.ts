@@ -111,6 +111,9 @@ export const PERMISOS: DefinicionPermiso[] = [
 
   // Respaldos (solo administración técnica)
   { codigo: 'respaldos.gestionar', modulo: 'respaldos', descripcion: 'Generar, listar y descargar respaldos de la base de datos' },
+
+  // Encuestas de satisfacción
+  { codigo: 'encuestas.ver', modulo: 'encuestas', descripcion: 'Ver las respuestas y el resumen de encuestas de satisfacción' },
 ];
 
 /** Objeto de acceso tipado: PERMISO.USUARIOS_CREAR === 'usuarios.crear'. */
@@ -175,6 +178,7 @@ export const PERMISO = {
   DASHBOARD_VER: 'dashboard.ver',
   REPORTES_VER: 'reportes.ver',
   RESPALDOS_GESTIONAR: 'respaldos.gestionar',
+  ENCUESTAS_VER: 'encuestas.ver',
 } as const;
 
 // ── Roles ───────────────────────────────────────────────────────────────────
@@ -293,6 +297,7 @@ export const ROL_PERMISOS: Record<string, string[]> = {
     PERMISO.RIESGOS_ARCHIVAR,
     PERMISO.DASHBOARD_VER,
     PERMISO.REPORTES_VER,
+    PERMISO.ENCUESTAS_VER,
   ],
   [ROL.RESP_PROCESO]: [
     PERMISO.ORGANIZACION_VER,
@@ -317,6 +322,7 @@ export const ROL_PERMISOS: Record<string, string[]> = {
     PERMISO.RIESGOS_EDITAR,
     PERMISO.DASHBOARD_VER,
     PERMISO.REPORTES_VER,
+    PERMISO.ENCUESTAS_VER,
   ],
   [ROL.AUDITOR_INTERNO]: [
     PERMISO.ORGANIZACION_VER,
@@ -348,6 +354,7 @@ export const ROL_PERMISOS: Record<string, string[]> = {
     PERMISO.RIESGOS_VER,
     PERMISO.DASHBOARD_VER,
     PERMISO.REPORTES_VER,
+    PERMISO.ENCUESTAS_VER,
   ],
   [ROL.COLABORADOR]: [
     PERMISO.DOCUMENTOS_VER,
