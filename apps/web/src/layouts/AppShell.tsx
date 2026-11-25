@@ -215,7 +215,7 @@ export function AppShell() {
           style={{ position: 'sticky', top: 0, height: '100vh', overflow: 'visible' }}
         >
           <style>{ESTILOS_TOGGLE}</style>
-          <div style={{ height: '100%', overflow: 'auto' }}>
+          <div className="sider-scroll" style={{ height: '100%', overflowY: 'auto', overflowX: 'hidden' }}>
             <Marca colapsado={colapsado} />
             {menuNavegacion}
           </div>
