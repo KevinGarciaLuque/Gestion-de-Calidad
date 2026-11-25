@@ -167,11 +167,12 @@ export interface MccDetalle {
     evaluacionResultado: string | null
     aprendizaje: string | null
     gestionadoPor: { id: string; nombre: string } | null
+    hallazgo: HallazgoVinculado | null
     control: DatosControl
   }
   eventos: { id: string; fecha: string; tipo: string; detalle: string | null; estadoNuevo: EstadoMCC | null; actorNombre: string | null }[]
   acciones: { id: string; codigo: string; descripcion: string; estado: string; avance: number; responsable: { nombre: string } | null }[]
-  puede: { editar: boolean; gestionar: boolean; crearAccion: boolean }
+  puede: { editar: boolean; gestionar: boolean; crearAccion: boolean; escalar: boolean }
 }
 
 /** Filtros compartidos por el tablero y la tabla de Control ACyP. */
@@ -245,6 +246,15 @@ export interface FilaControl {
   plazo: { situacion: SituacionPlazo; dias: number | null }
   tieneEvidencia: boolean
   critico: boolean
+  hallazgo: { id: string; codigo: string; estado: string } | null
+}
+
+/** Hallazgo formal (ciclo ISO) al que se escaló un registro del Control MCC. */
+export interface HallazgoVinculado {
+  id: string
+  codigo: string
+  estado: string
+  clasificacion: string
 }
 
 export interface CatalogosMCC {
@@ -307,6 +317,11 @@ export const mccApi = {
     (await api.post(`/mcc/${id}/cerrar`, payload)).data,
   comentar: async (id: string, texto: string): Promise<MccDetalle> => (await api.post(`/mcc/${id}/comentario`, { texto })).data,
 
+  escalar: async (
+    id: string,
+    payload: { clasificacion: string; procesoId?: string; responsableId?: string; requisito?: string; prioridad?: string },
+  ): Promise<{ hallazgoId: string; codigo: string }> => (await api.post(`/mcc/${id}/escalar`, payload)).data,
+
   // Control MCC
   tablero: async (f: FiltrosControl): Promise<TableroMCC> => (await api.get('/mcc/control/tablero', { params: f })).data,
   control: async (
@@ -346,6 +361,30 @@ export const mccApi = {
     setTimeout(() => URL.revokeObjectURL(url), 1000)
   },
 }
+
+/** Descarga un archivo de la API con el token de sesión (CSV de Excel o PDF). */
+async function descargar(ruta: string, params: Record<string, unknown>, nombre: string) {
+  const base = api.defaults.baseURL ?? '/api'
+  const qs = new URLSearchParams(
+    Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== '').map(([k, v]) => [k, String(v)]),
+  ).toString()
+  const res = await fetch(`${base}${ruta}${qs ? `?${qs}` : ''}`, { headers: { Authorization: `Bearer ${getAccessToken() ?? ''}` } })
+  if (!res.ok) throw new Error('No se pudo generar el archivo')
+  const url = URL.createObjectURL(await res.blob())
+  const a = document.createElement('a')
+  a.href = url
+  a.download = nombre
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
+}
+
+const hoyIso = () => new Date().toISOString().slice(0, 10)
+
+export const exportarControlExcel = (f: FiltrosControl) => descargar('/mcc/control/exportar', { ...f }, `control-mcc-${hoyIso()}.csv`)
+export const descargarInformeMcc = (f: FiltrosControl, sufijo: string) =>
+  descargar('/mcc/control/informe', { ...f }, `informe-control-mcc-${sufijo}.pdf`)
 
 export const lempiras = (n: number) =>
   `L. ${n.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`

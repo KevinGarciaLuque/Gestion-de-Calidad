@@ -241,11 +241,15 @@ export class DashboardService {
   private async mcc(inicioAnio: Date) {
     const lista = await this.prisma.registroMCC.findMany({
       where: { archivadoAt: null },
-      select: { estado: true, fechaCierre: true },
+      select: { estado: true, fechaCierre: true, hallazgo: { select: { id: true } } },
     });
-    const cuenta = (estados: string[]) => lista.filter((m) => estados.includes(m.estado)).length;
+    // Los registros escalados a hallazgo formal ya se cuentan en "Hallazgos": aquí no se
+    // vuelven a contar como abiertos, para que cada no conformidad cuente una sola vez.
+    const propios = lista.filter((m) => !m.hallazgo);
+    const cuenta = (estados: string[]) => propios.filter((m) => estados.includes(m.estado)).length;
     return {
       total: lista.length,
+      escalados: lista.length - propios.length,
       nuevos: cuenta(['NUEVO', 'EN_REVISION']),
       enEjecucion: cuenta(['ACEPTADO', 'EN_EJECUCION', 'VERIFICACION']),
       cerrados: lista.filter((m) => m.estado === 'CERRADO' && m.fechaCierre && m.fechaCierre >= inicioAnio)

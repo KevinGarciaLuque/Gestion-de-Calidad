@@ -6,13 +6,14 @@
  * y con columnas extra: las que no se reconocen se ignoran y se informan.
  */
 import type { EstadoMCC, FasePHVA, TipoRegistroMCC } from '@prisma/client';
+import { BOM } from '../common/csv';
 import { estadoDesdeEstatus, type EstatusControl } from './mcc-control';
 
 // ── CSV ─────────────────────────────────────────────────────────────────────
 
 /** Parser CSV (RFC 4180): comillas, comillas escapadas y saltos de línea dentro de campos. */
 export function parseCsv(texto: string): string[][] {
-  const t = texto.replace(/^﻿/, '');
+  const t = texto.startsWith(BOM) ? texto.slice(1) : texto;
   const primera = t.split(/\r?\n/, 1)[0] ?? '';
   const cuenta = (c: string) => primera.split(c).length - 1;
   const sep = [';', '\t', ','].reduce((a, b) => (cuenta(b) > cuenta(a) ? b : a), ',');

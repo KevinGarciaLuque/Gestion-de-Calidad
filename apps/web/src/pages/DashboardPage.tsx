@@ -144,7 +144,9 @@ export function DashboardPage() {
             <TarjetaKpi
               titulo="Mejora continua"
               valor={data.mcc.enEjecucion}
-              detalle={`${data.mcc.nuevos} por evaluar · ${data.mcc.cerrados} cerradas`}
+              detalle={`${data.mcc.nuevos} por evaluar · ${data.mcc.cerrados} cerradas${
+                data.mcc.escalados ? ` · ${data.mcc.escalados} escaladas a NC` : ''
+              }`}
               color={semaforo.gris}
               icono={<ThunderboltOutlined />}
               onClick={() => navigate('/mcc')}

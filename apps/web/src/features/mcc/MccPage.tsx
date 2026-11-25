@@ -1,7 +1,17 @@
 import { useState } from 'react'
 import { App, Button, Card, DatePicker, Flex, Form, Input, Modal, Select, Space, Table, Tabs, Tag, Typography } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
-import { ClearOutlined, DashboardOutlined, FilterFilled, PlusOutlined, TableOutlined, UnorderedListOutlined, UploadOutlined } from '@ant-design/icons'
+import {
+  ClearOutlined,
+  DashboardOutlined,
+  FileExcelOutlined,
+  FilePdfOutlined,
+  FilterFilled,
+  PlusOutlined,
+  TableOutlined,
+  UnorderedListOutlined,
+  UploadOutlined,
+} from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import dayjs from 'dayjs'
@@ -11,6 +21,7 @@ import {
   ETIQUETA_ESTATUS,
   ETIQUETA_ORIGEN_MCC,
   ETIQUETA_TIPO,
+  exportarControlExcel,
   mccApi,
   TAG_ESTATUS,
   type EstadoMCC,
@@ -23,6 +34,7 @@ import { MccTablero } from './MccTablero'
 import { MccControlTabla } from './MccControlTabla'
 import { MccRegistroForm } from './MccRegistroForm'
 import { MccImportarModal } from './MccImportarModal'
+import { InformeMccModal } from './InformeMccModal'
 
 const { Title, Text } = Typography
 
@@ -39,6 +51,21 @@ export function MccPage() {
   const [nuevo, setNuevo] = useState(false)
   const [proponer, setProponer] = useState(false)
   const [importar, setImportar] = useState(false)
+  const [informe, setInforme] = useState(false)
+  const [exportando, setExportando] = useState(false)
+  const { message } = App.useApp()
+
+  /** Exporta lo que se ve en el tablero (mismos filtros) con las columnas de la hoja original. */
+  const exportar = async () => {
+    setExportando(true)
+    try {
+      await exportarControlExcel(filtros)
+    } catch {
+      message.error('No se pudo exportar')
+    } finally {
+      setExportando(false)
+    }
+  }
 
   const { data: cat } = useQuery({ queryKey: ['mcc', 'catalogos'], queryFn: mccApi.catalogos, staleTime: 60_000 })
   const { data: tablero } = useQuery({
@@ -64,6 +91,12 @@ export function MccPage() {
           </Text>
         </div>
         <Space wrap>
+          <Button icon={<FileExcelOutlined />} loading={exportando} onClick={exportar}>
+            Exportar a Excel
+          </Button>
+          <Button icon={<FilePdfOutlined />} onClick={() => setInforme(true)}>
+            Informe PDF
+          </Button>
           {gestiona && (
             <Button icon={<UploadOutlined />} onClick={() => setImportar(true)} style={{ background: '#fadb14', borderColor: '#fadb14', fontWeight: 600 }}>
               Importar CSV histórico
@@ -129,6 +162,7 @@ export function MccPage() {
 
       <MccRegistroForm abierto={nuevo} onCerrar={() => setNuevo(false)} onGuardado={verRegistro} />
       <MccImportarModal abierto={importar} onCerrar={() => setImportar(false)} />
+      <InformeMccModal abierto={informe} onCerrar={() => setInforme(false)} filtros={filtros} />
       <ProponerMejora abierto={proponer} onCerrar={() => setProponer(false)} />
     </>
   )

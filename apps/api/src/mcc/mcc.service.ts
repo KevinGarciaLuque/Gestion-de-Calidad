@@ -19,6 +19,7 @@ import type {
   DecidirMCCDto,
   EdicionRapidaMCCDto,
   EditarMCCDto,
+  EscalarMCCDto,
   FiltrosControlQuery,
   ListarControlQuery,
   ListarMCCQuery,
@@ -44,7 +45,11 @@ const INCLUDE = {
   acciones: {
     select: { id: true, codigo: true, descripcion: true, estado: true, avance: true, responsable: { select: { nombre: true } } },
   },
+  hallazgo: { select: { id: true, codigo: true, estado: true, clasificacion: true } },
 } satisfies Prisma.RegistroMCCInclude;
+
+/** Tipos que pueden escalarse a hallazgo formal (las felicitaciones y sugerencias no). */
+const TIPOS_ESCALABLES: TipoRegistroMCC[] = ['NO_CONFORMIDAD', 'SALIDA_NO_CONFORME', 'ENTRADA_NO_CONFORME', 'QUEJA', 'OTRO'];
 
 type MCCFull = Prisma.RegistroMCCGetPayload<{ include: typeof INCLUDE }>;
 
@@ -74,6 +79,7 @@ const SELECT_CONTROL = {
   responsableNombre: true,
   notaEvidencia: true,
   acciones: { select: { estado: true } },
+  hallazgo: { select: { id: true, codigo: true, estado: true } },
 } satisfies Prisma.RegistroMCCSelect;
 
 type FilaBD = Prisma.RegistroMCCGetPayload<{ select: typeof SELECT_CONTROL }>;
@@ -87,6 +93,95 @@ const PREFIJO_TIPO: Partial<Record<TipoRegistroMCC, string>> = {
 };
 
 const ACCION_TERMINADA = ['COMPLETADA', 'VERIFICADA'];
+
+const MESES = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
+
+/** Mismos textos que usa la hoja original (y que reconoce el importador). */
+const ETIQUETA_TIPO_REG: Record<TipoRegistroMCC, string> = {
+  NO_CONFORMIDAD: 'NO CONFORMIDAD',
+  SALIDA_NO_CONFORME: 'SALIDA NO CONFORME',
+  ENTRADA_NO_CONFORME: 'ENTRADA NO CONFORME',
+  QUEJA: 'QUEJA',
+  FELICITACION: 'FELICITACIÓN',
+  SUGERENCIA: 'SUGERENCIA',
+  OTRO: 'OTRO',
+};
+const ETIQUETA_ESTATUS_EXP: Record<EstatusControl, string> = {
+  ABIERTO: 'ABIERTO',
+  EN_SEGUIMIENTO: 'EN SEGUIMIENTO',
+  CERRADO: 'CERRADO',
+  DESESTIMADO: 'DESESTIMADO',
+  SIN_ESTADO: '',
+};
+
+/** Encabezados idénticos a los de la hoja del Control MCC: el archivo exportado se puede volver a importar. */
+export const COLUMNAS_EXPORTACION = [
+  { key: 'codigo', label: 'ID' },
+  { key: 'tipo', label: 'Tipo de Registro' },
+  { key: 'codigoTipo', label: 'Código' },
+  { key: 'gestorCalidad', label: 'Gestor de Calidad' },
+  { key: 'fechaRecepcion', label: 'Fecha y Hora de Recepción' },
+  { key: 'mes', label: 'Mes' },
+  { key: 'usuarioEncuentra', label: 'Usuario que Encuentra' },
+  { key: 'areaReporta', label: 'Área que Reporta' },
+  { key: 'fuente', label: 'Fuente' },
+  { key: 'fuenteSecundaria', label: 'Fuente Secundaria' },
+  { key: 'numeroExpediente', label: 'N° Expediente' },
+  { key: 'turno', label: 'Turno' },
+  { key: 'problema', label: '¿Cuál es el Problema Principal?' },
+  { key: 'descripcion', label: 'Descripción del Hallazgo' },
+  { key: 'macroproceso', label: 'Macroproceso / Parte Interesada' },
+  { key: 'areaResponsable', label: 'Área o Servicio Responsable' },
+  { key: 'procesoAfectado', label: 'Proceso Afectado' },
+  { key: 'subproceso', label: 'Subproceso' },
+  { key: 'procedimiento', label: 'Procedimiento' },
+  { key: 'subrogado', label: 'Subrogado' },
+  { key: 'impacto', label: 'Impacto' },
+  { key: 'dondeImpacto', label: '¿Dónde Impactó?' },
+  { key: 'causaRaiz', label: 'Causa-Raíz' },
+  { key: 'porque1', label: '¿Por qué #1?' },
+  { key: 'porque2', label: '¿Por qué #2?' },
+  { key: 'porque3', label: '¿Por qué #3?' },
+  { key: 'porque4', label: '¿Por qué #4?' },
+  { key: 'porque5', label: '¿Por qué #5?' },
+  { key: 'requiereAcyp', label: '¿Requiere ACyP?' },
+  { key: 'acypCodigo', label: 'ID ACyP' },
+  { key: 'compAdq', label: 'Comp. Adq.' },
+  { key: 'compCump', label: 'Comp. Cump.' },
+  { key: 'pctCump', label: '% Cump.' },
+  { key: 'escalamiento', label: 'Escalamiento' },
+  { key: 'costos', label: '¿Costos?' },
+  { key: 'costo', label: 'Costo (L)' },
+  { key: 'phva', label: 'PHVA' },
+  { key: 'logros', label: 'Logros Obtenidos' },
+  { key: 'leanDefecto', label: 'LEAN · Defecto' },
+  { key: 'leanRetrabajo', label: 'LEAN · Retrabajo' },
+  { key: 'leanEspera', label: 'LEAN · Espera' },
+  { key: 'leanMovimiento', label: 'LEAN · Movimiento' },
+  { key: 'responsable', label: 'Responsable' },
+  { key: 'fechaNotificacion', label: 'Fecha Notificación' },
+  { key: 'fechaCompRespuesta', label: 'Fecha Comp. Respuesta' },
+  { key: 'fechaLimite', label: 'Fecha Límite / Cierre Máx.' },
+  { key: 'fechaCierre', label: 'Fecha Cierre Real' },
+  { key: 'estatus', label: 'Estatus de Cierre' },
+  { key: 'indicador', label: 'Indicador de Criterio' },
+  { key: 'validacion', label: 'Validación Calidad' },
+  { key: 'notaEvidencia', label: 'Nota de Evidencia' },
+  { key: 'hallazgo', label: 'Hallazgo formal' },
+] as const;
+
+/** "2026-11-01" (o ISO completo) → medianoche local de ese día; evita el corrimiento de UTC. */
+function fechaLocal(s: string): Date {
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return m ? new Date(+m[1], +m[2] - 1, +m[3]) : new Date(s);
+}
+
+/** dd/mm/aaaa [hh:mm] en hora local. */
+function formatoFecha(d: Date, hora = false): string {
+  const p = (n: number) => String(n).padStart(2, '0');
+  const base = `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()}`;
+  return hora && (d.getHours() || d.getMinutes()) ? `${base} ${p(d.getHours())}:${p(d.getMinutes())}` : base;
+}
 
 @Injectable()
 export class MccService {
@@ -140,6 +235,12 @@ export class MccService {
         editar: gestiona || (m.propuestoPorId === actor.id && m.estado === 'NUEVO'),
         gestionar: gestiona,
         crearAccion: (actor.esSuperAdmin || actor.permisos.includes(PERMISO.ACCIONES_CREAR)) && m.estado === 'EN_EJECUCION',
+        escalar:
+          gestiona &&
+          (actor.esSuperAdmin || actor.permisos.includes(PERMISO.HALLAZGOS_CREAR)) &&
+          !m.hallazgo &&
+          !!m.tipoRegistro && TIPOS_ESCALABLES.includes(m.tipoRegistro) &&
+          !['CERRADO', 'NO_PROCEDE'].includes(m.estado),
       },
     };
   }
@@ -192,6 +293,7 @@ export class MccService {
     const gestiona = this.gestiona(actor);
     const puede = gestiona || (m.propuestoPorId === actor.id && m.estado === 'NUEVO');
     if (!puede) throw new ForbiddenException('No puedes editar este registro');
+    if (gestiona && estatusDe(m.estado) !== dto.estatus) this.validarCierreEscalado(m, dto.estatus); // antes de guardar nada
     const control = this.datosControl(dto);
     if (dto.areaResponsable && dto.areaId === undefined) {
       const areaId = await this.buscarAreaId(dto.areaResponsable);
@@ -254,6 +356,7 @@ export class MccService {
         plazo: plazoDe(estatus, f.fechaLimite, hoy),
         tieneEvidencia: !!f.notaEvidencia,
         critico: esCritico(fc),
+        hallazgo: f.hallazgo,
       };
     });
     if (q.estatus) filas = filas.filter((f) => f.estatus === q.estatus);
@@ -298,6 +401,7 @@ export class MccService {
 
   async edicionRapida(id: string, dto: EdicionRapidaMCCDto, actor: UsuarioActual) {
     const m = await this.exigeGestion(id, actor);
+    if (estatusDe(m.estado) !== dto.estatus) this.validarCierreEscalado(m, dto.estatus); // antes de guardar nada
     const fecha = (v: string | null | undefined) => (v === undefined ? undefined : v ? new Date(v) : null);
     const data: Prisma.RegistroMCCUncheckedUpdateInput = {
       fechaRecepcion: fecha(dto.fechaRecepcion),
@@ -353,9 +457,19 @@ export class MccService {
         porCodigo.set(r.codigo, r);
       }
     }
-    const existentes = new Set(
-      (await this.prisma.registroMCC.findMany({ where: { codigo: { in: [...porCodigo.keys()] } }, select: { codigo: true } })).map((e) => e.codigo),
+    const encontrados = await this.prisma.registroMCC.findMany({
+      where: { codigo: { in: [...porCodigo.keys()] } },
+      select: { codigo: true, hallazgo: { select: { codigo: true, estado: true } } },
+    });
+    const existentes = new Set(encontrados.map((e) => e.codigo));
+    // Los escalados con hallazgo abierto conservan su estatus: lo manda la verificación de eficacia.
+    const escaladosAbiertos = new Map(
+      encontrados.filter((e) => e.hallazgo && e.hallazgo.estado !== 'CERRADO').map((e) => [e.codigo, e.hallazgo!.codigo]),
     );
+    for (const [codigo, hallazgo] of escaladosAbiertos) {
+      const r = porCodigo.get(codigo)!;
+      advertencias.push({ fila: r.fila, mensaje: `${codigo} está escalado al hallazgo ${hallazgo} (abierto): se actualizan sus datos pero no su estatus` });
+    }
     const nuevos = [...porCodigo.values()].filter((r) => !existentes.has(r.codigo!)).length + sinCodigo.length;
     const actualizados = [...porCodigo.keys()].filter((c) => existentes.has(c)).length;
 
@@ -403,7 +517,7 @@ export class MccService {
       };
       await this.prisma.registroMCC.upsert({
         where: { codigo },
-        update: datos,
+        update: escaladosAbiertos.has(codigo) ? { ...datos, estado: undefined, fechaCierre: undefined } : datos,
         create: {
           ...datos,
           codigo,
@@ -421,6 +535,260 @@ export class MccService {
       valorNuevo: { filas: resumen.filasLeidas, nuevos, actualizados, errores: errores.length },
     });
     return resumen;
+  }
+
+  /**
+   * Escala el registro a un hallazgo formal (H-AAAA-NNN) para llevarlo por el ciclo
+   * ISO completo: validación, análisis de causa, plan, eficacia. El registro MCC queda
+   * vinculado y "en seguimiento"; se cierra solo cuando se cierre el hallazgo.
+   */
+  async escalar(id: string, dto: EscalarMCCDto, actor: UsuarioActual) {
+    const m = await this.exigeGestion(id, actor);
+    if (!actor.esSuperAdmin && !actor.permisos.includes(PERMISO.HALLAZGOS_CREAR)) {
+      throw new ForbiddenException('No tienes permiso para registrar hallazgos');
+    }
+    if (m.hallazgo) throw new BadRequestException(`Este registro ya se escaló al hallazgo ${m.hallazgo.codigo}`);
+    if (!m.tipoRegistro || !TIPOS_ESCALABLES.includes(m.tipoRegistro)) {
+      throw new BadRequestException('Solo se escalan no conformidades, salidas/entradas no conformes y quejas');
+    }
+    if (['CERRADO', 'NO_PROCEDE'].includes(m.estado)) throw new BadRequestException('El registro ya está cerrado o desestimado');
+    if (dto.procesoId && !(await this.prisma.proceso.findUnique({ where: { id: dto.procesoId } })))
+      throw new NotFoundException('Proceso no encontrado');
+    if (dto.responsableId && !(await this.prisma.usuario.findUnique({ where: { id: dto.responsableId } })))
+      throw new NotFoundException('Responsable no encontrado');
+
+    const anio = new Date().getFullYear();
+    const usados = await this.prisma.hallazgo.findMany({ where: { codigo: { startsWith: `H-${anio}-` } }, select: { codigo: true } });
+    const max = usados.reduce((acc, u) => Math.max(acc, Number(u.codigo.split('-')[2]) || 0), 0);
+    const codigo = `H-${anio}-${String(max + 1).padStart(3, '0')}`;
+
+    const ref = m.codigoTipo ?? m.codigo;
+    const porques = ((m.porques as string[] | null) ?? []).filter((p) => p?.trim());
+    const critico = esCritico({ impacto: m.impacto, prioridad: m.prioridad });
+
+    const h = await this.prisma.$transaction(async (tx) => {
+      const h = await tx.hallazgo.create({
+        data: {
+          codigo,
+          origen: 'CONTROL_MCC',
+          mccId: m.id,
+          procesoId: dto.procesoId ?? null,
+          areaId: m.areaId,
+          descripcion: `[${ref}] ${m.titulo}\n\n${m.descripcion}`.slice(0, 2000),
+          clasificacion: dto.clasificacion,
+          requisito: dto.requisito?.trim() || null,
+          evidencia: m.notaEvidencia,
+          fechaDeteccion: m.fechaRecepcion ?? m.creadoAt,
+          detectadoPorId: actor.id,
+          responsableId: dto.responsableId ?? null,
+          fechaCompromiso: m.fechaLimite,
+          prioridad: dto.prioridad ?? m.prioridad ?? (critico ? 'ALTA' : 'MEDIA'),
+          eventos: {
+            create: {
+              tipo: 'comentario',
+              detalle: `Escalado desde el Control MCC (${ref}). Área: ${m.area?.nombre ?? m.areaResponsable ?? '—'}. Responsable en la hoja: ${m.responsableNombre ?? '—'}.`,
+              actorId: actor.id,
+              actorNombre: actor.nombre,
+            },
+          },
+          // La causa raíz y los 5 porqués ya trabajados en el MCC pasan al análisis formal.
+          ...(m.causaRaiz || porques.length
+            ? {
+                analisisCausa: {
+                  create: {
+                    metodologia: 'CINCO_PORQUES',
+                    contenido: { problema: m.titulo, porques: porques.map((p, i) => ({ pregunta: `¿Por qué ${i + 1}?`, respuesta: p })) },
+                    causaRaiz: m.causaRaiz,
+                    elaboradoPorId: actor.id,
+                    elaboradoAt: new Date(),
+                  },
+                },
+              }
+            : {}),
+        },
+      });
+      await tx.registroMCC.update({
+        where: { id: m.id },
+        data: { estado: ['NUEVO', 'EN_REVISION', 'ACEPTADO', 'SIN_ESTADO'].includes(m.estado) ? 'EN_EJECUCION' : undefined },
+      });
+      await tx.eventoMCC.create({
+        data: { mccId: m.id, tipo: 'escalado', detalle: `Escalado al hallazgo formal ${codigo}`, estadoNuevo: 'EN_EJECUCION', actorNombre: actor.nombre },
+      });
+      return h;
+    });
+    await this.bitacora.registrar({
+      accion: 'mcc.escalar', actorId: actor.id, actorEmail: actor.email, entidad: 'RegistroMCC', entidadId: m.id,
+      valorNuevo: { hallazgo: codigo, hallazgoId: h.id },
+    });
+    return { hallazgoId: h.id, codigo };
+  }
+
+  // ── Reportes: exportación a Excel e informe PDF ─────────────────────────
+
+  /**
+   * Registros con las mismas columnas (y encabezados) de la hoja original del Control MCC,
+   * así el archivo se abre en Excel y se puede volver a importar sin perder datos.
+   */
+  async exportacion(q: FiltrosControlQuery, actor: UsuarioActual | null) {
+    const ids = (await this.filasControl(q, actor)).map((f) => f.id);
+    const regs = await this.prisma.registroMCC.findMany({
+      where: { id: { in: ids } },
+      include: { area: { select: { nombre: true } }, hallazgo: { select: { codigo: true, estado: true } }, acciones: { select: { estado: true } } },
+      orderBy: [{ fechaRecepcion: 'asc' }, { creadoAt: 'asc' }],
+    });
+    const hoy = new Date();
+    const f = (d: Date | null, hora = false) => (d ? formatoFecha(d, hora) : '');
+    const n = (v: number | null | undefined) => (v === null || v === undefined ? '' : String(v).replace('.', ','));
+    const columnas = COLUMNAS_EXPORTACION;
+    const filas = regs.map((m) => {
+      const est = estatusDe(m.estado);
+      const plazo = plazoDe(est, m.fechaLimite, hoy);
+      const porques = (m.porques as string[] | null) ?? [];
+      const pct = porcentajeCumplimiento({
+        compromisosAdquiridos: m.compromisosAdquiridos,
+        compromisosCumplidos: m.compromisosCumplidos,
+        accionesTotal: m.acciones.length,
+        accionesTerminadas: m.acciones.filter((a) => ACCION_TERMINADA.includes(a.estado)).length,
+      });
+      const fecha = m.fechaRecepcion ?? m.creadoAt;
+      return {
+        codigo: m.codigo,
+        tipo: m.tipoRegistro ? ETIQUETA_TIPO_REG[m.tipoRegistro] : '',
+        codigoTipo: m.codigoTipo ?? 'S/C',
+        gestorCalidad: m.gestorCalidad ?? '',
+        fechaRecepcion: f(m.fechaRecepcion, true),
+        mes: MESES[fecha.getMonth()],
+        usuarioEncuentra: m.usuarioEncuentra ?? '',
+        areaReporta: m.areaReporta ?? '',
+        fuente: m.fuente ?? '',
+        fuenteSecundaria: m.fuenteSecundaria ?? '',
+        numeroExpediente: m.numeroExpediente ?? '',
+        turno: m.turno ?? '',
+        problema: m.titulo,
+        descripcion: m.descripcion,
+        macroproceso: m.macroproceso ?? '',
+        areaResponsable: m.area?.nombre?.toUpperCase() ?? m.areaResponsable ?? '',
+        procesoAfectado: m.procesoAfectado ?? '',
+        subproceso: m.subproceso ?? '',
+        procedimiento: m.procedimiento ?? '',
+        subrogado: m.subrogado ?? '',
+        impacto: m.impacto ?? '',
+        dondeImpacto: m.dondeImpacto ?? '',
+        causaRaiz: m.causaRaiz ?? '',
+        porque1: porques[0] ?? '',
+        porque2: porques[1] ?? '',
+        porque3: porques[2] ?? '',
+        porque4: porques[3] ?? '',
+        porque5: porques[4] ?? '',
+        requiereAcyp: m.requiereAcyp ? 'SI' : 'NO',
+        acypCodigo: m.acypCodigo ?? '',
+        compAdq: n(m.compromisosAdquiridos),
+        compCump: n(m.compromisosCumplidos),
+        pctCump: pct === null ? '' : `${pct}%`,
+        escalamiento: m.escalamiento ?? '',
+        costos: m.tieneCostos ? 'SI' : 'NO',
+        costo: m.costoCalidad ? Number(m.costoCalidad).toFixed(2).replace('.', ',') : '0',
+        phva: m.phva ?? '',
+        logros: m.logros ?? '',
+        leanDefecto: m.leanDefecto ?? '',
+        leanRetrabajo: m.leanRetrabajo ?? '',
+        leanEspera: m.leanEspera ?? '',
+        leanMovimiento: m.leanMovimiento ?? '',
+        responsable: m.responsableNombre ?? '',
+        fechaNotificacion: f(m.fechaNotificacion),
+        fechaCompRespuesta: f(m.fechaCompromisoRespuesta),
+        fechaLimite: f(m.fechaLimite),
+        fechaCierre: f(m.fechaCierre),
+        estatus: ETIQUETA_ESTATUS_EXP[est],
+        indicador: plazo.situacion === 'VENCIDO' ? `VENCIDO (${plazo.dias}d)` : plazo.situacion === 'POR_VENCER' ? `POR VENCER (${plazo.dias}d)` : plazo.situacion.replace('_', ' '),
+        validacion: m.validacionCalidad ?? '',
+        notaEvidencia: m.notaEvidencia ?? '',
+        hallazgo: m.hallazgo ? `${m.hallazgo.codigo} (${m.hallazgo.estado})` : '',
+      } satisfies Record<(typeof columnas)[number]['key'], string>;
+    });
+    return { columnas: [...columnas], filas };
+  }
+
+  /** Datos del informe del Control MCC (PDF): KPIs, tendencia de 12 meses, áreas y vencidos. */
+  async informe(q: FiltrosControlQuery, actor: UsuarioActual | null) {
+    const hoy = new Date();
+    const filas = await this.filasControl(q, actor);
+    const fcs = filas.map((f) => this.aFilaControl(f));
+    const tablero = calcularTablero(fcs, hoy);
+
+    // Tendencia: 12 meses que terminan en el fin del periodo, con los demás filtros.
+    const fin = q.hasta ? fechaLocal(q.hasta) : hoy;
+    const todas = await this.filasControl({ macroproceso: q.macroproceso, area: q.area, tipo: q.tipo }, actor);
+    const meses = Array.from({ length: 12 }, (_, i) => {
+      const d = new Date(fin.getFullYear(), fin.getMonth() - 11 + i, 1);
+      return { clave: `${d.getFullYear()}-${d.getMonth()}`, etiqueta: `${MESES[d.getMonth()].slice(0, 3)} ${String(d.getFullYear()).slice(2)}`, registrados: 0, cerrados: 0, costo: 0 };
+    });
+    const porClave = new Map(meses.map((m) => [m.clave, m]));
+    for (const f of todas) {
+      const fr = f.fechaRecepcion ?? f.creadoAt;
+      const m = porClave.get(`${fr.getFullYear()}-${fr.getMonth()}`);
+      if (m) {
+        m.registrados++;
+        m.costo += f.costoCalidad ? Number(f.costoCalidad) : 0;
+      }
+      if (f.fechaCierre && f.estado === 'CERRADO') {
+        const c = porClave.get(`${f.fechaCierre.getFullYear()}-${f.fechaCierre.getMonth()}`);
+        if (c) c.cerrados++;
+      }
+    }
+
+    // Consolidado por macroproceso (suma de sus áreas).
+    const macro = new Map<string, { macroproceso: string; total: number; abiertos: number; seguimiento: number; cerrados: number; vencidos: number; base: number; acypVencidas: number }>();
+    for (const c of tablero.consolidado) {
+      const k = c.macroproceso;
+      const a = macro.get(k) ?? { macroproceso: k, total: 0, abiertos: 0, seguimiento: 0, cerrados: 0, vencidos: 0, base: 0, acypVencidas: 0 };
+      a.total += c.total;
+      a.abiertos += c.abiertos;
+      a.seguimiento += c.seguimiento;
+      a.cerrados += c.cerrados;
+      a.vencidos += c.vencidos;
+      a.base += c.total - c.desestimados - c.sinEstado;
+      a.acypVencidas += c.acypVencidas;
+      macro.set(k, a);
+    }
+
+    const vencidos = filas
+      .map((f) => ({ f, plazo: plazoDe(estatusDe(f.estado), f.fechaLimite, hoy) }))
+      .filter((x) => x.plazo.situacion === 'VENCIDO')
+      .sort((a, b) => (b.plazo.dias ?? 0) - (a.plazo.dias ?? 0))
+      .map(({ f, plazo }) => ({
+        codigo: f.codigoTipo ?? f.codigo,
+        titulo: f.titulo,
+        area: f.area?.nombre?.toUpperCase() ?? f.areaResponsable ?? '—',
+        responsable: f.responsableNombre ?? '—',
+        fechaLimite: f.fechaLimite ? formatoFecha(f.fechaLimite) : '—',
+        dias: plazo.dias ?? 0,
+        hallazgo: f.hallazgo?.codigo ?? null,
+      }));
+
+    const org = await this.prisma.unidadOrganizativa.findFirst({ where: { tipo: 'HOSPITAL' }, orderBy: { orden: 'asc' }, select: { nombre: true } });
+    const periodo = q.desde && q.hasta
+      ? `${formatoFecha(fechaLocal(q.desde))} – ${formatoFecha(fechaLocal(q.hasta))}`
+      : q.mes ? `Mes de ${MESES[q.mes - 1].toLowerCase()} (todos los años)` : 'Todo el histórico';
+    const filtros = [
+      q.macroproceso && `Macroproceso: ${q.macroproceso}`,
+      q.area && `Área: ${q.area}`,
+      q.tipo && `Tipo: ${ETIQUETA_TIPO_REG[q.tipo]}`,
+    ].filter(Boolean) as string[];
+
+    return {
+      organizacion: org?.nombre ?? 'Hospital',
+      generadoAt: hoy.toISOString(),
+      periodo,
+      filtros,
+      tablero,
+      tendencia: meses,
+      porMacroproceso: [...macro.values()]
+        .sort((a, b) => b.total - a.total)
+        .map((a) => ({ ...a, porcentajeCierre: a.base > 0 ? Math.round((a.cerrados / a.base) * 1000) / 10 : 0 })),
+      vencidos,
+      escalados: filas.filter((f) => f.hallazgo).length,
+    };
   }
 
   // ── Flujo de propuestas de mejora (sin cambios) ─────────────────────────
@@ -469,6 +837,9 @@ export class MccService {
   async cerrar(id: string, dto: CerrarMCCDto, actor: UsuarioActual) {
     const m = await this.exigeGestion(id, actor);
     if (!['VERIFICACION', 'EN_EJECUCION'].includes(m.estado)) throw new BadRequestException('El registro no está en verificación');
+    if (m.hallazgo && m.hallazgo.estado !== 'CERRADO') {
+      throw new BadRequestException(`Se cierra automáticamente al cerrar el hallazgo ${m.hallazgo.codigo}`);
+    }
     await this.prisma.$transaction([
       this.prisma.registroMCC.update({
         where: { id },
@@ -536,8 +907,14 @@ export class MccService {
   }
 
   /** Cambia el estatus de cierre (ABIERTO / EN SEGUIMIENTO / CERRADO / DESESTIMADO) dejando huella en el historial. */
-  private async aplicarEstatus(m: { id: string; estado: EstadoMCC; fechaCierre: Date | null }, estatus: EstatusControl, fechaCierre: string | null | undefined, actor: UsuarioActual) {
+  private async aplicarEstatus(
+    m: { id: string; estado: EstadoMCC; fechaCierre: Date | null; hallazgo?: { codigo: string; estado: string } | null },
+    estatus: EstatusControl,
+    fechaCierre: string | null | undefined,
+    actor: UsuarioActual,
+  ) {
     if (estatusDe(m.estado) === estatus) return;
+    this.validarCierreEscalado(m, estatus);
     const estado = estadoDesdeEstatus(estatus);
     const cierra = estatus === 'CERRADO' || estatus === 'DESESTIMADO';
     await this.prisma.$transaction([
@@ -552,6 +929,15 @@ export class MccService {
         data: { mccId: m.id, tipo: 'estatus', detalle: `Estatus de cierre: ${estatus.replace('_', ' ')}`, estadoNuevo: estado, actorNombre: actor.nombre },
       }),
     ]);
+  }
+
+  /** Un registro escalado se cierra cuando se cierra su hallazgo formal (verificación de eficacia). */
+  private validarCierreEscalado(m: { hallazgo?: { codigo: string; estado: string } | null }, estatus: EstatusControl | undefined) {
+    if (m.hallazgo && m.hallazgo.estado !== 'CERRADO' && (estatus === 'CERRADO' || estatus === 'DESESTIMADO')) {
+      throw new BadRequestException(
+        `Este registro se escaló al hallazgo ${m.hallazgo.codigo}: se cierra automáticamente al verificar la eficacia del hallazgo.`,
+      );
+    }
   }
 
   /** Convierte los campos del formulario a datos de Prisma (undefined = no tocar). */
@@ -653,9 +1039,10 @@ export class MccService {
     }
   }
 
-  private async filasControl(q: FiltrosControlQuery, actor: UsuarioActual): Promise<FilaBD[]> {
+  /** actor = null solo desde Reportes (permiso reportes.ver): sin filtro de visibilidad. */
+  private async filasControl(q: FiltrosControlQuery, actor: UsuarioActual | null): Promise<FilaBD[]> {
     const and: Prisma.RegistroMCCWhereInput[] = [{ archivadoAt: null }];
-    const vis = this.visibilidad(actor);
+    const vis = actor ? this.visibilidad(actor) : null;
     if (vis) and.push(vis);
     if (q.tipo) and.push({ tipoRegistro: q.tipo });
     if (q.macroproceso) and.push({ macroproceso: q.macroproceso });
@@ -665,8 +1052,8 @@ export class MccService {
       select: SELECT_CONTROL,
       orderBy: [{ fechaRecepcion: 'desc' }, { creadoAt: 'desc' }],
     });
-    const desde = q.desde ? new Date(q.desde) : null;
-    const hasta = q.hasta ? new Date(new Date(q.hasta).getTime() + 86_399_999) : null;
+    const desde = q.desde ? fechaLocal(q.desde) : null;
+    const hasta = q.hasta ? new Date(fechaLocal(q.hasta).getTime() + 86_399_999) : null; // hasta el fin de ese día
     return filas.filter((f) => {
       const fecha = f.fechaRecepcion ?? f.creadoAt;
       if (desde && fecha < desde) return false;
@@ -744,6 +1131,7 @@ export class MccService {
       evaluacionResultado: m.evaluacionResultado,
       aprendizaje: m.aprendizaje,
       gestionadoPor: m.gestionadoPor,
+      hallazgo: m.hallazgo,
       control: {
         gestorCalidad: m.gestorCalidad,
         usuarioEncuentra: m.usuarioEncuentra,

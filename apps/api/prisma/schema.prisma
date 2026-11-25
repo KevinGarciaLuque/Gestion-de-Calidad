@@ -743,6 +743,7 @@ enum OrigenHallazgo {
   INCIDENTE
   INSPECCION
   REVISION_DIRECCION
+  CONTROL_MCC // escalado desde un registro del Control MCC
   OTRO
 }
 
@@ -808,6 +809,8 @@ model Hallazgo {
   verificadoAt       DateTime?         @map("verificado_at")
   fechaCierre        DateTime?         @map("fecha_cierre")
   motivoReapertura  String?           @map("motivo_reapertura") @db.Text
+  /// Registro del Control MCC del que se escaló este hallazgo (1:1).
+  mccId          String?               @unique @map("mcc_id")
 
   archivadoAt    DateTime?             @map("archivado_at")
   creadoAt       DateTime              @default(now()) @map("creado_at")
@@ -819,6 +822,7 @@ model Hallazgo {
   area          UnidadOrganizativa? @relation(fields: [areaId], references: [id], onDelete: SetNull)
   detectadoPor  Usuario?       @relation("HallazgoDetectadoPor", fields: [detectadoPorId], references: [id], onDelete: SetNull)
   responsable   Usuario?       @relation("HallazgoResponsable", fields: [responsableId], references: [id], onDelete: SetNull)
+  mcc           RegistroMCC?   @relation(fields: [mccId], references: [id], onDelete: SetNull)
   analisisCausa AnalisisCausa?
   eventos       EventoHallazgo[]
   acciones      Accion[]
@@ -1138,6 +1142,7 @@ model RegistroMCC {
   gestionadoPor Usuario?          @relation("MCCGestionadoPor", fields: [clasificadoPorId], references: [id], onDelete: SetNull)
   acciones    Accion[]
   eventos     EventoMCC[]
+  hallazgo    Hallazgo? // hallazgo formal ISO al que se escaló (si aplica)
 
   @@index([estado])
   @@index([tipoRegistro])

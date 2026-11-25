@@ -15,7 +15,7 @@ import {
   Min,
   MinLength,
 } from 'class-validator';
-import { FasePHVA, OrigenMCC, PrioridadHallazgo, TipoRegistroMCC } from '@prisma/client';
+import { ClasificacionHallazgo, FasePHVA, OrigenMCC, PrioridadHallazgo, TipoRegistroMCC } from '@prisma/client';
 import { PaginacionQuery } from '../../common/dto/paginacion';
 
 const ESTATUS = ['ABIERTO', 'EN_SEGUIMIENTO', 'CERRADO', 'DESESTIMADO', 'SIN_ESTADO'] as const;
@@ -118,6 +118,15 @@ export class EdicionRapidaMCCDto {
   @IsOptional() @IsString() @MaxLength(191) macroproceso?: string | null;
   @IsOptional() @IsString() @MaxLength(191) areaResponsable?: string | null;
   @IsOptional() @IsString() @MaxLength(191) responsableNombre?: string | null;
+}
+
+/** Escalar un registro del Control MCC a hallazgo formal (ciclo ISO completo). */
+export class EscalarMCCDto {
+  @IsEnum(ClasificacionHallazgo) clasificacion!: ClasificacionHallazgo;
+  @IsOptional() @IsString() procesoId?: string;
+  @IsOptional() @IsString() responsableId?: string;
+  @IsOptional() @IsString() @MaxLength(200) requisito?: string;
+  @IsOptional() @IsEnum(PrioridadHallazgo) prioridad?: PrioridadHallazgo;
 }
 
 export class ImportarMCCQuery {

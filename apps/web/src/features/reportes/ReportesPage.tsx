@@ -5,6 +5,8 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import dayjs from 'dayjs'
 import { mensajeDeError } from '@/lib/api'
+import { useAuth } from '@/features/auth/useAuth'
+import { InformeMccModal } from '@/features/mcc/InformeMccModal'
 import { descargarReporteCsv, reportesApi, type ReporteDatos } from './reportesApi'
 
 const { Title, Text, Paragraph } = Typography
@@ -13,6 +15,8 @@ export function ReportesPage() {
   const navigate = useNavigate()
   const { message } = App.useApp()
   const [vista, setVista] = useState<ReporteDatos | null>(null)
+  const [informeMcc, setInformeMcc] = useState(false)
+  const { puede } = useAuth()
 
   const catalogo = useQuery({ queryKey: ['reportes', 'catalogo'], queryFn: reportesApi.catalogo })
 
@@ -57,6 +61,28 @@ export function ReportesPage() {
           </Button>
         </Flex>
       </Card>
+
+      {puede('mcc.ver') && (
+        <Card style={{ marginBottom: 16, background: '#fffbe6', borderColor: '#ffe58f' }} styles={{ body: { padding: 16 } }}>
+          <Flex justify="space-between" align="center" wrap gap={12}>
+            <div>
+              <Text strong>
+                <FilePdfOutlined /> Informe del Control MCC
+              </Text>
+              <div>
+                <Text type="secondary">
+                  Mensual, anual o por rango: % de cierre, costo de la no calidad, ACyP, tendencia de 12 meses,
+                  consolidado por macroproceso y área, y registros vencidos.
+                </Text>
+              </div>
+            </div>
+            <Button icon={<FilePdfOutlined />} onClick={() => setInformeMcc(true)}>
+              Generar informe PDF
+            </Button>
+          </Flex>
+        </Card>
+      )}
+      <InformeMccModal abierto={informeMcc} onCerrar={() => setInformeMcc(false)} />
 
       <Row gutter={[16, 16]}>
         {catalogo.data?.map((r) => (

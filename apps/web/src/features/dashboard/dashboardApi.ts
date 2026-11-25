@@ -53,7 +53,7 @@ export interface ResumenDashboard {
     porEstado: Record<string, number>
   }
   documentos: { vigentes: number; porRevisar30d: number; vencidos: number }
-  mcc: { total: number; nuevos: number; enEjecucion: number; cerrados: number }
+  mcc: { total: number; escalados: number; nuevos: number; enEjecucion: number; cerrados: number }
   radar: AlertaRadar[]
 }
 

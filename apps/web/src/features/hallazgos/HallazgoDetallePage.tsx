@@ -192,6 +192,11 @@ export function HallazgoDetallePage() {
                   <Tag>{h.auditoria.codigo}</Tag>
                 </Link>
               )}
+              {h.mcc && (
+                <Link to={`/mcc/${h.mcc.id}`}>
+                  <Tag color="gold">Control MCC · {h.mcc.codigoTipo ?? h.mcc.codigo}</Tag>
+                </Link>
+              )}
             </Space>
           </div>
         </Space>

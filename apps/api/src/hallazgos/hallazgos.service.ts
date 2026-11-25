@@ -36,6 +36,7 @@ const INCLUDE = {
   responsable: { select: { id: true, nombre: true } },
   detectadoPor: { select: { id: true, nombre: true } },
   auditoria: { select: { id: true, codigo: true } },
+  mcc: { select: { id: true, codigo: true, codigoTipo: true, tipoRegistro: true } },
   analisisCausa: true,
   eventos: { orderBy: { fecha: 'asc' } },
 } satisfies Prisma.HallazgoInclude;
@@ -314,6 +315,7 @@ export class HallazgosService {
         },
       });
       await this.evento(id, 'cerrado', dto.verificacionEficacia, 'CERRADO', actor);
+      await this.sincronizarMcc(h, 'CERRADO', `Cerrado al verificar la eficacia del hallazgo ${h.codigo}`, actor);
     } else {
       await this.prisma.hallazgo.update({
         where: { id },
@@ -326,6 +328,7 @@ export class HallazgosService {
         },
       });
       await this.evento(id, 'eficacia_negativa', dto.verificacionEficacia, 'REABIERTO', actor);
+      await this.sincronizarMcc(h, 'EN_EJECUCION', `El hallazgo ${h.codigo} no fue eficaz y se reabrió`, actor);
     }
     await this.bitacora.registrar({
       accion: dto.eficaciaConfirmada ? 'hallazgo.cerrar' : 'hallazgo.eficacia_negativa',
@@ -342,6 +345,7 @@ export class HallazgosService {
       data: { estado: 'REABIERTO', motivoReapertura: dto.motivo.trim(), fechaCierre: null, eficaciaConfirmada: null },
     });
     await this.evento(id, 'reabierto', dto.motivo, 'REABIERTO', actor);
+    await this.sincronizarMcc(h, 'EN_EJECUCION', `Reabierto porque se reabrió el hallazgo ${h.codigo}: ${dto.motivo}`, actor);
     await this.bitacora.registrar({
       accion: 'hallazgo.reabrir', actorId: actor.id, actorEmail: actor.email, entidad: 'Hallazgo', entidadId: id,
     });
@@ -349,6 +353,20 @@ export class HallazgosService {
   }
 
   // ── Auxiliares ─────────────────────────────────────────────────────────
+
+  /** Refleja el cierre / reapertura del hallazgo en el registro del Control MCC del que se escaló. */
+  private async sincronizarMcc(h: HallazgoFull, estado: 'CERRADO' | 'EN_EJECUCION', detalle: string, actor: UsuarioActual) {
+    if (!h.mccId) return;
+    await this.prisma.$transaction([
+      this.prisma.registroMCC.update({
+        where: { id: h.mccId },
+        data: { estado, fechaCierre: estado === 'CERRADO' ? new Date() : null },
+      }),
+      this.prisma.eventoMCC.create({
+        data: { mccId: h.mccId, tipo: 'estatus', detalle, estadoNuevo: estado, actorNombre: actor.nombre },
+      }),
+    ]);
+  }
 
   private async exige(id: string): Promise<HallazgoFull> {
     const h = await this.prisma.hallazgo.findUnique({ where: { id }, include: INCLUDE });
@@ -414,6 +432,7 @@ export class HallazgosService {
       area: h.area,
       responsable: h.responsable,
       auditoria: h.auditoria,
+      mcc: h.mcc,
       fechaDeteccion: h.fechaDeteccion,
       fechaCompromiso: h.fechaCompromiso,
       fechaCierre: h.fechaCierre,

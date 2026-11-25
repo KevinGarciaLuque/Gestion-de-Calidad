@@ -1,6 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { aCsv } from '../common/csv';
 import { DashboardService } from '../dashboard/dashboard.service';
+import { MccService } from '../mcc/mcc.service';
 import { etiquetaPeriodo } from '../indicadores/periodos';
 
 export interface ColumnaReporte {
@@ -34,6 +36,7 @@ export class ReportesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly dashboard: DashboardService,
+    private readonly mcc: MccService,
   ) {}
 
   private get definiciones(): Record<string, DefinicionReporte> {
@@ -73,6 +76,12 @@ export class ReportesService {
         descripcion: 'Acciones CAPA con origen, avance, compromiso y estado.',
         generar: () => this.repAcciones(),
       },
+      mcc: {
+        titulo: 'Control MCC (hoja completa)',
+        descripcion:
+          'Todos los registros del Control MCC con las mismas columnas de la hoja original: se puede abrir en Excel y volver a importar.',
+        generar: () => this.mcc.exportacion({}, null),
+      },
     };
   }
 
@@ -110,15 +119,7 @@ export class ReportesService {
   }
 
   toCsv(reporte: Reporte): string {
-    const esc = (v: string | number) => {
-      const s = String(v ?? '');
-      return /[";\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-    };
-    const cabecera = reporte.columnas.map((c) => esc(c.label)).join(';');
-    const cuerpo = reporte.filas
-      .map((f) => reporte.columnas.map((c) => esc(f[c.key] ?? '')).join(';'))
-      .join('\r\n');
-    return `﻿${cabecera}\r\n${cuerpo}\r\n`;
+    return aCsv(reporte.columnas, reporte.filas);
   }
 
   // ── Generadores ───────────────────────────────────────────────────────────

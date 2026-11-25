@@ -8,6 +8,7 @@ export type OrigenHallazgo =
   | 'INCIDENTE'
   | 'INSPECCION'
   | 'REVISION_DIRECCION'
+  | 'CONTROL_MCC'
   | 'OTRO'
 export type ClasificacionHallazgo =
   | 'NO_CONFORMIDAD_MAYOR'
@@ -32,6 +33,7 @@ export const ETIQUETA_ORIGEN: Record<OrigenHallazgo, string> = {
   INCIDENTE: 'Incidente',
   INSPECCION: 'Inspección',
   REVISION_DIRECCION: 'Revisión por la dirección',
+  CONTROL_MCC: 'Control MCC',
   OTRO: 'Otro',
 }
 export const ETIQUETA_CLASIFICACION: Record<ClasificacionHallazgo, string> = {
@@ -76,6 +78,7 @@ export interface HallazgoFila {
   area: { id: string; nombre: string } | null
   responsable: { id: string; nombre: string } | null
   auditoria: { id: string; codigo: string } | null
+  mcc: { id: string; codigo: string; codigoTipo: string | null } | null
   fechaDeteccion: string
   fechaCompromiso: string | null
   fechaCierre: string | null

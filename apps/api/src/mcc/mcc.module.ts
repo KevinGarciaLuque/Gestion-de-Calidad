@@ -5,5 +5,6 @@ import { MccService } from './mcc.service';
 @Module({
   controllers: [MccController],
   providers: [MccService],
+  exports: [MccService],
 })
 export class MccModule {}

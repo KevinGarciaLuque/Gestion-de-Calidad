@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import {
+  Alert,
   App,
   Breadcrumb,
   Button,
@@ -15,14 +16,16 @@ import {
   Timeline,
   Typography,
 } from 'antd'
-import { ArrowLeftOutlined, EditOutlined } from '@ant-design/icons'
+import { AlertOutlined, ArrowLeftOutlined, EditOutlined } from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import dayjs from 'dayjs'
 import { mensajeDeError } from '@/lib/api'
 import { AccionesDeCasoTab } from '@/features/acciones/AccionesDeCasoTab'
 import { GenericoEvidenciasPanel } from '@/features/acciones/GenericoEvidenciasPanel'
+import { ETIQUETA_ESTADO_HALLAZGO, type EstadoHallazgo } from '@/features/hallazgos/hallazgosApi'
 import { MccRegistroForm } from './MccRegistroForm'
+import { EscalarHallazgoModal } from './EscalarHallazgoModal'
 import { FichaControl } from './FichaControl'
 import {
   ETIQUETA_ESTADO_MCC,
@@ -46,6 +49,7 @@ const TIPO_EVENTO: Record<string, string> = {
   comentario: 'Comentario',
   estatus: 'Cambio de estatus',
   importado: 'Importado del histórico',
+  escalado: 'Escalado a hallazgo formal',
 }
 
 export function MccDetallePage() {
@@ -55,6 +59,7 @@ export function MccDetallePage() {
   const { message, modal } = App.useApp()
   const [comentario, setComentario] = useState('')
   const [editando, setEditando] = useState(false)
+  const [escalando, setEscalando] = useState(false)
 
   const { data, isLoading, isError } = useQuery({ queryKey: ['mcc', id], queryFn: () => mccApi.obtener(id) })
 
@@ -86,8 +91,15 @@ export function MccDetallePage() {
         Editar
       </Button>,
     )
+  if (data.puede.escalar)
+    acciones.push(
+      <Button key="esc" danger icon={<AlertOutlined />} onClick={() => setEscalando(true)}>
+        Escalar a hallazgo formal
+      </Button>,
+    )
   if (data.puede.gestionar) {
-    if (['NUEVO', 'EN_REVISION'].includes(m.estado)) {
+    // Los registros escalados siguen el flujo del hallazgo, no el de propuesta de mejora.
+    if (['NUEVO', 'EN_REVISION'].includes(m.estado) && !m.hallazgo) {
       acciones.push(
         <Button
           key="d"
@@ -121,19 +133,20 @@ export function MccDetallePage() {
         </Button>,
       )
     }
-    if (m.estado === 'ACEPTADO')
+    if (m.estado === 'ACEPTADO' && !m.hallazgo)
       acciones.push(
         <Button key="ie" type="primary" onClick={() => run(mccApi.iniciarEjecucion(id))}>
           Iniciar ejecución
         </Button>,
       )
-    if (m.estado === 'EN_EJECUCION')
+    if (m.estado === 'EN_EJECUCION' && !m.hallazgo)
       acciones.push(
         <Button key="v" onClick={() => run(mccApi.verificacion(id))}>
           Pasar a verificación
         </Button>,
       )
-    if (['VERIFICACION', 'EN_EJECUCION'].includes(m.estado))
+    // Si se escaló, el cierre lo da la verificación de eficacia del hallazgo.
+    if (['VERIFICACION', 'EN_EJECUCION'].includes(m.estado) && (!m.hallazgo || m.hallazgo.estado === 'CERRADO'))
       acciones.push(
         <Button
           key="c"
@@ -186,7 +199,29 @@ export function MccDetallePage() {
         <Space wrap>{acciones}</Space>
       </Flex>
 
-      {!['NO_PROCEDE', 'SIN_ESTADO'].includes(m.estado) && (
+      {m.hallazgo && (
+        <Alert
+          type={m.hallazgo.estado === 'CERRADO' ? 'success' : 'warning'}
+          showIcon
+          style={{ marginBottom: 16 }}
+          message={
+            <span>
+              Escalado al hallazgo formal{' '}
+              <Link to={`/hallazgos/${m.hallazgo.id}`}>
+                <Text strong>{m.hallazgo.codigo}</Text>
+              </Link>{' '}
+              · {ETIQUETA_ESTADO_HALLAZGO[m.hallazgo.estado as EstadoHallazgo] ?? m.hallazgo.estado}
+            </span>
+          }
+          description={
+            m.hallazgo.estado === 'CERRADO'
+              ? 'La eficacia del hallazgo se verificó y este registro quedó cerrado.'
+              : 'El análisis de causa, el plan de acción y la verificación de eficacia se llevan en el hallazgo. Este registro se cierra solo al cerrarlo.'
+          }
+        />
+      )}
+
+      {!['NO_PROCEDE', 'SIN_ESTADO'].includes(m.estado) && !m.hallazgo && (
         <Steps
           size="small"
           current={paso}
@@ -295,6 +330,7 @@ export function MccDetallePage() {
         ]}
       />
       <MccRegistroForm abierto={editando} onCerrar={() => setEditando(false)} registro={m} onGuardado={refrescar} />
+      <EscalarHallazgoModal abierto={escalando} onCerrar={() => setEscalando(false)} registro={m} />
     </>
   )
 }

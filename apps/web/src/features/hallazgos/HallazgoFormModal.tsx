@@ -94,7 +94,9 @@ export function HallazgoFormModal({
         {!edicion && (
           <Form.Item name="origen" label="Origen" rules={[{ required: true }]}>
             <Select
-              options={(Object.keys(ETIQUETA_ORIGEN) as OrigenHallazgo[]).map((o) => ({ value: o, label: ETIQUETA_ORIGEN[o] }))}
+              options={(Object.keys(ETIQUETA_ORIGEN) as OrigenHallazgo[])
+                .filter((o) => o !== 'CONTROL_MCC') // solo se crea escalando desde el Control MCC
+                .map((o) => ({ value: o, label: ETIQUETA_ORIGEN[o] }))}
             />
           </Form.Item>
         )}

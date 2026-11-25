@@ -4,6 +4,7 @@ import type { ColumnsType } from 'antd/es/table'
 import { EyeOutlined, PaperClipOutlined, WarningFilled } from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
+import { Link } from 'react-router-dom'
 import { mensajeDeError } from '@/lib/api'
 import { useAuth } from '@/features/auth/useAuth'
 import {
@@ -157,7 +158,10 @@ export function MccControlTabla({
         editable ? (
           <Select size="small" style={{ width: 150, fontWeight: 600 }} value={v}
             options={(['ABIERTO', 'EN_SEGUIMIENTO', 'CERRADO', 'DESESTIMADO', 'SIN_ESTADO'] as EstatusControl[]).map((e) => ({
-              value: e, label: ETIQUETA_ESTATUS[e].split(' /')[0].toUpperCase(),
+              value: e,
+              label: ETIQUETA_ESTATUS[e].split(' /')[0].toUpperCase(),
+              // Escalado: se cierra al verificar la eficacia del hallazgo, no a mano.
+              disabled: !!r.hallazgo && r.hallazgo.estado !== 'CERRADO' && (e === 'CERRADO' || e === 'DESESTIMADO'),
             }))}
             onChange={(x) => set(r.id, { estatus: x })} />
         ) : ETIQUETA_ESTATUS[v],
@@ -256,6 +260,13 @@ function Situacion({ fila: r }: { fila: FilaControl }) {
       <Text type="secondary" style={{ fontSize: 11 }}>
         {r.acyp ? `${r.acypCodigo ?? 'ACyP'}${r.cumplimiento !== null ? ` · ${r.cumplimiento}%` : ''}` : 'Sin ACyP'}
       </Text>
+      {r.hallazgo && (
+        <Tooltip title="Escalado a hallazgo formal: se cierra al verificar su eficacia">
+          <Link to={`/hallazgos/${r.hallazgo.id}`}>
+            <Tag color="gold" style={{ fontSize: 11, marginTop: 2 }}>{r.hallazgo.codigo}</Tag>
+          </Link>
+        </Tooltip>
+      )}
     </Space>
   )
 }

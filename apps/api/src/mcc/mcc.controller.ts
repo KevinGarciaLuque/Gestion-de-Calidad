@@ -26,12 +26,15 @@ import {
   DecidirMCCDto,
   EdicionRapidaMCCDto,
   EditarMCCDto,
+  EscalarMCCDto,
   FiltrosControlQuery,
   ImportarMCCQuery,
   ListarControlQuery,
   ListarMCCQuery,
 } from './dto/mcc.dto';
 import { MccService } from './mcc.service';
+import { generarInformeMccPdf } from './mcc-informe-pdf';
+import { aCsv } from '../common/csv';
 
 @Controller('mcc')
 export class MccController {
@@ -57,6 +60,26 @@ export class MccController {
   @RequierePermiso(PERMISO.MCC_VER)
   listarControl(@Query() q: ListarControlQuery, @CurrentUser() actor: UsuarioActual) {
     return this.mcc.listarControl(q, actor);
+  }
+
+  /** Excel (CSV ; con BOM) con las columnas de la hoja original y los filtros aplicados. */
+  @Get('control/exportar')
+  @RequierePermiso(PERMISO.MCC_VER)
+  async exportar(@Query() q: FiltrosControlQuery, @CurrentUser() actor: UsuarioActual, @Res() res: Response) {
+    const { columnas, filas } = await this.mcc.exportacion(q, actor);
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="control-mcc-${new Date().toISOString().slice(0, 10)}.csv"`);
+    res.send(aCsv(columnas, filas));
+  }
+
+  /** Informe PDF del Control MCC (para la dirección) con los filtros aplicados. */
+  @Get('control/informe')
+  @RequierePermiso(PERMISO.MCC_VER)
+  async informePdf(@Query() q: FiltrosControlQuery, @CurrentUser() actor: UsuarioActual, @Res() res: Response) {
+    const data = await this.mcc.informe(q, actor);
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="informe-control-mcc-${data.generadoAt.slice(0, 10)}.pdf"`);
+    generarInformeMccPdf(data).pipe(res);
   }
 
   @Get('control/catalogos')
@@ -133,6 +156,12 @@ export class MccController {
   @RequierePermiso(PERMISO.MCC_VER)
   comentar(@Param('id') id: string, @Body() dto: ComentarMCCDto, @CurrentUser() actor: UsuarioActual) {
     return this.mcc.comentar(id, dto, actor);
+  }
+
+  @Post(':id/escalar')
+  @RequierePermiso(PERMISO.MCC_GESTIONAR)
+  escalar(@Param('id') id: string, @Body() dto: EscalarMCCDto, @CurrentUser() actor: UsuarioActual) {
+    return this.mcc.escalar(id, dto, actor);
   }
 
   @Post(':id/archivar')

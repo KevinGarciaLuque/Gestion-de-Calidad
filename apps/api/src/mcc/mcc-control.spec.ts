@@ -1,5 +1,6 @@
 import { calcularTablero, plazoDe, type FilaControl } from './mcc-control';
 import { aEstatus, aFecha, aNumero, aTipo, interpretarFila, mapearEncabezados, parseCsv } from './mcc-import';
+import { COLUMNAS_EXPORTACION } from './mcc.service';
 
 const hoy = new Date(2026, 10, 25);
 
@@ -52,6 +53,21 @@ describe('importación CSV', () => {
     expect(r.datos.costoCalidad).toBe(1500);
     expect(r.datos.fechaLimite).toBeNull();
     expect(r.advertencias).toHaveLength(1);
+  });
+});
+
+describe('exportación ↔ importación', () => {
+  it('el importador reconoce todas las columnas exportadas (salvo las calculadas)', () => {
+    const { ignoradas, reconocidas } = mapearEncabezados(COLUMNAS_EXPORTACION.map((c) => c.label));
+    expect(ignoradas.sort()).toEqual(['% Cump.', 'Hallazgo formal', 'Indicador de Criterio', 'Mes']);
+    expect(reconocidas).toHaveLength(COLUMNAS_EXPORTACION.length - 4);
+  });
+
+  it('los textos exportados se vuelven a leer igual', () => {
+    expect(aTipo('FELICITACIÓN')).toBe('FELICITACION');
+    expect(aEstatus('EN SEGUIMIENTO')).toBe('EN_SEGUIMIENTO');
+    expect(aNumero('12500,50')).toBe(12500.5);
+    expect(aFecha('04/11/2026 08:30')).toEqual(new Date(2026, 10, 4, 8, 30));
   });
 });
 
