@@ -15,16 +15,22 @@ import {
   Timeline,
   Typography,
 } from 'antd'
-import { ArrowLeftOutlined } from '@ant-design/icons'
+import { ArrowLeftOutlined, EditOutlined } from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import dayjs from 'dayjs'
 import { mensajeDeError } from '@/lib/api'
 import { AccionesDeCasoTab } from '@/features/acciones/AccionesDeCasoTab'
+import { GenericoEvidenciasPanel } from '@/features/acciones/GenericoEvidenciasPanel'
+import { MccRegistroForm } from './MccRegistroForm'
+import { FichaControl } from './FichaControl'
 import {
   ETIQUETA_ESTADO_MCC,
+  ETIQUETA_ESTATUS,
   ETIQUETA_ORIGEN_MCC,
+  ETIQUETA_TIPO,
   mccApi,
+  TAG_ESTATUS,
   ORDEN_ESTADOS_MCC,
 } from './mccApi'
 
@@ -38,6 +44,8 @@ const TIPO_EVENTO: Record<string, string> = {
   verificacion: 'Pasa a verificación',
   cerrado: 'Cerrado',
   comentario: 'Comentario',
+  estatus: 'Cambio de estatus',
+  importado: 'Importado del histórico',
 }
 
 export function MccDetallePage() {
@@ -46,6 +54,7 @@ export function MccDetallePage() {
   const qc = useQueryClient()
   const { message, modal } = App.useApp()
   const [comentario, setComentario] = useState('')
+  const [editando, setEditando] = useState(false)
 
   const { data, isLoading, isError } = useQuery({ queryKey: ['mcc', id], queryFn: () => mccApi.obtener(id) })
 
@@ -71,6 +80,12 @@ export function MccDetallePage() {
   const paso = m.estado === 'NO_PROCEDE' ? 0 : Math.max(0, ORDEN_ESTADOS_MCC.indexOf(m.estado))
 
   const acciones: React.ReactNode[] = []
+  if (data.puede.editar)
+    acciones.push(
+      <Button key="ed" icon={<EditOutlined />} onClick={() => setEditando(true)}>
+        Editar
+      </Button>,
+    )
   if (data.puede.gestionar) {
     if (['NUEVO', 'EN_REVISION'].includes(m.estado)) {
       acciones.push(
@@ -158,18 +173,20 @@ export function MccDetallePage() {
             </Title>
             <Space size={6} wrap style={{ marginTop: 6 }}>
               <Tag>{m.codigo}</Tag>
-              <Tag>{ETIQUETA_ORIGEN_MCC[m.origen]}</Tag>
+              {m.codigoTipo && <Tag color="blue">{m.codigoTipo}</Tag>}
+              {m.tipoRegistro ? <Tag color="geekblue">{ETIQUETA_TIPO[m.tipoRegistro]}</Tag> : <Tag>{ETIQUETA_ORIGEN_MCC[m.origen]}</Tag>}
+              <Tag color={TAG_ESTATUS[m.estatus]}>{ETIQUETA_ESTATUS[m.estatus]}</Tag>
               <Tag color={m.estado === 'CERRADO' ? 'success' : m.estado === 'NO_PROCEDE' ? 'default' : 'processing'}>
                 {ETIQUETA_ESTADO_MCC[m.estado]}
               </Tag>
-              {m.area && <Tag>{m.area.nombre}</Tag>}
+              {(m.area || m.areaResponsable) && <Tag>{m.area?.nombre ?? m.areaResponsable}</Tag>}
             </Space>
           </div>
         </Space>
         <Space wrap>{acciones}</Space>
       </Flex>
 
-      {m.estado !== 'NO_PROCEDE' && (
+      {!['NO_PROCEDE', 'SIN_ESTADO'].includes(m.estado) && (
         <Steps
           size="small"
           current={paso}
@@ -190,7 +207,9 @@ export function MccDetallePage() {
             key: 'ficha',
             label: 'Ficha',
             children: (
-              <Descriptions bordered size="small" column={1}>
+              <>
+              {m.tipoRegistro && <FichaControl registro={m} />}
+              <Descriptions bordered size="small" column={1} title={m.tipoRegistro ? 'Flujo de mejora' : undefined}>
                 <Descriptions.Item label="Descripción">
                   <Paragraph style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{m.descripcion}</Paragraph>
                 </Descriptions.Item>
@@ -210,6 +229,21 @@ export function MccDetallePage() {
                 )}
                 {m.aprendizaje && <Descriptions.Item label="Aprendizaje">{m.aprendizaje}</Descriptions.Item>}
               </Descriptions>
+              </>
+            ),
+          },
+          {
+            key: 'evidencias',
+            label: 'Evidencias',
+            children: (
+              <GenericoEvidenciasPanel
+                queryKey={['mcc', id, 'evidencias']}
+                listar={() => mccApi.evidencias(id)}
+                subir={(f) => mccApi.subirEvidencia(id, f)}
+                quitar={(ev) => mccApi.quitarEvidencia(id, ev)}
+                descargar={(ev, nombre) => mccApi.descargarEvidencia(id, ev, nombre)}
+                puedeEditar={data.puede.editar}
+              />
             ),
           },
           {
@@ -260,6 +294,7 @@ export function MccDetallePage() {
           },
         ]}
       />
+      <MccRegistroForm abierto={editando} onCerrar={() => setEditando(false)} registro={m} onGuardado={refrescar} />
     </>
   )
 }

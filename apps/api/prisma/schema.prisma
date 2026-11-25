@@ -1043,6 +1043,25 @@ enum EstadoMCC {
   EN_EJECUCION
   VERIFICACION
   CERRADO
+  SIN_ESTADO // registros históricos importados sin estatus
+}
+
+/// Tipo de registro del Control MCC (columna "Tipo de Registro" de la hoja histórica).
+enum TipoRegistroMCC {
+  NO_CONFORMIDAD
+  SALIDA_NO_CONFORME
+  ENTRADA_NO_CONFORME
+  QUEJA
+  FELICITACION
+  SUGERENCIA
+  OTRO
+}
+
+enum FasePHVA {
+  PLANIFICAR
+  HACER
+  VERIFICAR
+  ACTUAR
 }
 
 model RegistroMCC {
@@ -1064,6 +1083,52 @@ model RegistroMCC {
   evaluacionResultado String? @map("evaluacion_resultado") @db.Text
   aprendizaje   String?   @db.Text
   fechaCierre   DateTime? @map("fecha_cierre")
+
+  // ── Control MCC (registro de hallazgos, quejas y felicitaciones) ──────
+  // 1. Identificación y recepción
+  tipoRegistro     TipoRegistroMCC? @map("tipo_registro")
+  codigoTipo       String?   @map("codigo_tipo") // NC-001-2026, SNC-…, ENC-…, SUG-…
+  gestorCalidad    String?   @map("gestor_calidad")
+  fechaRecepcion   DateTime? @map("fecha_recepcion")
+  usuarioEncuentra String?   @map("usuario_encuentra")
+  areaReporta      String?   @map("area_reporta")
+  fuente           String?
+  fuenteSecundaria String?   @map("fuente_secundaria")
+  numeroExpediente String?   @map("numero_expediente")
+  turno            String?
+  // 2. Macroproceso, área responsable e impacto
+  macroproceso     String?
+  areaResponsable  String?   @map("area_responsable") // texto libre; areaId si coincide con una unidad
+  procesoAfectado  String?   @map("proceso_afectado")
+  subproceso       String?
+  procedimiento    String?
+  subrogado        String?
+  dondeImpacto     String?   @map("donde_impacto")
+  // 3. Causa raíz, ACyP, costos y Lean / PHVA
+  causaRaiz        String?   @map("causa_raiz") @db.Text
+  porques          Json? // ["por qué 1", … "por qué 5"]
+  requiereAcyp     Boolean   @default(false) @map("requiere_acyp")
+  acypCodigo       String?   @map("acyp_codigo")
+  compromisosAdquiridos Int? @map("compromisos_adquiridos")
+  compromisosCumplidos  Int? @map("compromisos_cumplidos")
+  escalamiento     String?
+  tieneCostos      Boolean   @default(false) @map("tiene_costos")
+  costoCalidad     Decimal?  @map("costo_calidad") @db.Decimal(14, 2)
+  phva             FasePHVA?
+  logros           String?   @db.Text
+  leanDefecto      String?   @map("lean_defecto")
+  leanRetrabajo    String?   @map("lean_retrabajo")
+  leanEspera       String?   @map("lean_espera")
+  leanMovimiento   String?   @map("lean_movimiento")
+  // 4. Seguimiento y cierre
+  responsableNombre String?  @map("responsable_nombre")
+  fechaNotificacion DateTime? @map("fecha_notificacion")
+  fechaCompromisoRespuesta DateTime? @map("fecha_compromiso_respuesta")
+  fechaLimite      DateTime? @map("fecha_limite")
+  validacionCalidad String?  @map("validacion_calidad")
+  notaEvidencia    String?   @map("nota_evidencia") @db.Text
+  importadoAt      DateTime? @map("importado_at")
+
   archivadoAt   DateTime? @map("archivado_at")
   creadoAt      DateTime  @default(now()) @map("creado_at")
   actualizadoAt DateTime  @updatedAt @map("actualizado_at")
@@ -1075,6 +1140,8 @@ model RegistroMCC {
   eventos     EventoMCC[]
 
   @@index([estado])
+  @@index([tipoRegistro])
+  @@index([fechaRecepcion])
   @@map("registros_mcc")
 }
 
